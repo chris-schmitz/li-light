@@ -1,5 +1,6 @@
 #include "LightManager.h"
 #include <Arduino.h>
+
 #include <FastLED.h>
 
 #define ECHO_PIN 1
@@ -37,6 +38,18 @@ void setupLedStrip()
 
 void setupLiLightManager()
 {
+
+  lightManager.setSectionRange(PixelRange{0, 3});
+  lightManager.setSectionRange(PixelRange{4, 7});
+  lightManager.setSectionRange(PixelRange{8, 11});
+  lightManager.setSectionRange(PixelRange{12, 15});
+  lightManager.setSectionRange(PixelRange{16, 19});
+  lightManager.setSectionRange(PixelRange{20, 23});
+
+  lightManager.setSectionRange(PixelRange{24, 32});
+  lightManager.setSectionRange(PixelRange{33, 36});
+  lightManager.setSectionRange(PixelRange{37, 42});
+
   lightManager.setSectionRange(BAR_CODE_1, 0, 3);
   lightManager.setSectionRange(BAR_CODE_2, 4, 7);
   lightManager.setSectionRange(BAR_CODE_3, 8, 11);
@@ -47,8 +60,6 @@ void setupLiLightManager()
   lightManager.setSectionRange(GRAPH_RIGHT, 24, 32);
   lightManager.setSectionRange(GRAPH_MIDDLE, 33, 36);
   lightManager.setSectionRange(GRAPH_LEFT, 37, 42);
-
-  lightManager.setBars();
 }
 
 void setup()
@@ -58,8 +69,6 @@ void setup()
   setupLiLightManager();
 
   Serial.begin(9600);
-  while (!Serial)
-    ;
 }
 
 void updateLEDs(int brightnessLevel)
@@ -113,10 +122,6 @@ int updateMovingAverage(int rawDistance)
   return currentSum / totalReadings;
 }
 
-void activationAnimation()
-{
-}
-
 unsigned long colorChangeInterval = 500;
 unsigned long colorChangeLastChecked = 0;
 
@@ -124,20 +129,16 @@ bool flip = false;
 void loop()
 {
 
-  Serial.print("size of int: ");
-  Serial.println(sizeof(int));
-  Serial.print("size of pixel range: ");
-  Serial.println(sizeof(PixelRange));
-  Serial.print("size of pixel range for bars: ");
-  Serial.println(6 * sizeof(PixelRange));
-  Serial.print("size of bars: ");
-  Serial.println(sizeof(lightManager.bars));
-  Serial.print("Mem address of barCodeBar1: ");
-  Serial.println((long)&lightManager.barCodeBar1, HEX);
-  Serial.print("Mem address of bars[0]: ");
-  Serial.println((long)&lightManager.bars[0], HEX);
-  while (true)
-    ;
+  if (false)
+  {
+    Serial.print("size of int: ");
+    Serial.println(sizeof(int));
+    Serial.print("size of pixel range: ");
+    Serial.println(sizeof(PixelRange));
+    Serial.print("size of pixel range for bars: ");
+    Serial.println(6 * sizeof(PixelRange));
+    lightManager.printSections();
+  }
 
   unsigned long now = millis();
   if (now - colorChangeLastChecked > colorChangeInterval)
@@ -145,31 +146,52 @@ void loop()
     colorChangeLastChecked = now;
     if (flip == true)
     {
-      lightManager.setSectionColor(BAR_CODE_1, 255, 0, 255);
-      lightManager.setSectionColor(BAR_CODE_2, 0, 255, 255);
-      lightManager.setSectionColor(BAR_CODE_3, 255, 0, 255);
-      lightManager.setSectionColor(BAR_CODE_4, 0, 255, 255);
-      lightManager.setSectionColor(BAR_CODE_5, 255, 0, 255);
-      lightManager.setSectionColor(BAR_CODE_6, 0, 255, 255);
+      lightManager.setSectionColor(0, 255, 0, 255);
+      lightManager.setSectionColor(1, 0, 255, 255);
+      lightManager.setSectionColor(2, 255, 0, 255);
+      lightManager.setSectionColor(3, 0, 255, 255);
+      lightManager.setSectionColor(4, 255, 0, 255);
+      lightManager.setSectionColor(5, 0, 255, 255);
 
-      lightManager.setSectionColor(GRAPH_LEFT, 255, 0, 255);
-      lightManager.setSectionColor(GRAPH_MIDDLE, 0, 255, 255);
-      lightManager.setSectionColor(GRAPH_RIGHT, 255, 0, 255);
+      lightManager.setSectionColor(6, 255, 0, 255);
+      lightManager.setSectionColor(7, 0, 255, 255);
+      lightManager.setSectionColor(8, 255, 0, 255);
+      // lightManager.setSectionColor(BAR_CODE_1, 255, 0, 255);
+      // lightManager.setSectionColor(BAR_CODE_2, 0, 255, 255);
+      // lightManager.setSectionColor(BAR_CODE_3, 255, 0, 255);
+      // lightManager.setSectionColor(BAR_CODE_4, 0, 255, 255);
+      // lightManager.setSectionColor(BAR_CODE_5, 255, 0, 255);
+      // lightManager.setSectionColor(BAR_CODE_6, 0, 255, 255);
+
+      // lightManager.setSectionColor(GRAPH_LEFT, 255, 0, 255);
+      // lightManager.setSectionColor(GRAPH_MIDDLE, 0, 255, 255);
+      // lightManager.setSectionColor(GRAPH_RIGHT, 255, 0, 255);
       flip = false;
     }
     else
     {
-      lightManager.setSectionColor(BAR_CODE_2, 255, 0, 255);
-      lightManager.setSectionColor(BAR_CODE_3, 0, 255, 255);
-      lightManager.setSectionColor(BAR_CODE_4, 255, 0, 255);
-      lightManager.setSectionColor(BAR_CODE_5, 0, 255, 255);
-      lightManager.setSectionColor(BAR_CODE_6, 255, 0, 255);
+      lightManager.setSectionColor(0, 0, 255, 255);
+      lightManager.setSectionColor(1, 255, 0, 255);
+      lightManager.setSectionColor(2, 0, 255, 255);
+      lightManager.setSectionColor(3, 255, 0, 255);
+      lightManager.setSectionColor(4, 0, 255, 255);
+      lightManager.setSectionColor(5, 255, 0, 255);
 
-      lightManager.setSectionColor(GRAPH_LEFT, 0, 255, 255);
-      lightManager.setSectionColor(GRAPH_MIDDLE, 255, 0, 255);
-      lightManager.setSectionColor(GRAPH_RIGHT, 0, 255, 255);
+      lightManager.setSectionColor(6, 0, 255, 255);
+      lightManager.setSectionColor(7, 255, 0, 255);
+      lightManager.setSectionColor(8, 0, 255, 255);
+      // lightManager.setSectionColor(BAR_CODE_2, 255, 0, 255);
+      // lightManager.setSectionColor(BAR_CODE_3, 0, 255, 255);
+      // lightManager.setSectionColor(BAR_CODE_4, 255, 0, 255);
+      // lightManager.setSectionColor(BAR_CODE_5, 0, 255, 255);
+      // lightManager.setSectionColor(BAR_CODE_6, 255, 0, 255);
+
+      // lightManager.setSectionColor(GRAPH_LEFT, 0, 255, 255);
+      // lightManager.setSectionColor(GRAPH_MIDDLE, 255, 0, 255);
+      // lightManager.setSectionColor(GRAPH_RIGHT, 0, 255, 255);
       flip = true;
     }
+    FastLED.show();
 
     //   int distance = updateMovingAverage(readSensor());
     //   logDistance(distance);

@@ -1,5 +1,13 @@
-#pragma once
 #include "LightManager.h"
+
+void LightManager::setSectionRange(PixelRange range)
+{
+  if (sizeof(sections) / sizeof(sections[0]) > totalSections)
+  {
+    sections[currentSectionIndex] = range;
+    currentSectionIndex++;
+  }
+}
 
 void LightManager::setSectionRange(LiLightSection sectionName, int rangeStart, int rangeEnd)
 {
@@ -47,6 +55,22 @@ void LightManager::setSectionColor(LiLightSection sectionName, uint8_t red, uint
   setSectionColor(sectionName, color);
 }
 
+void LightManager::setSectionColor(int sectionIndex, uint8_t red, uint8_t green, uint8_t blue)
+{
+  setSectionColor(sectionIndex, CRGB(red, green, blue));
+}
+
+void LightManager::setSectionColor(int sectionIndex, CRGB color)
+{
+  char buffer[31];
+  sprintf(buffer, "Section %i - start: %i, end: %i", sectionIndex, sections[sectionIndex].start, sections[sectionIndex].end);
+  Serial.println(buffer);
+  for (int i = sections[sectionIndex].start; i < sections[sectionIndex].end; i++)
+  {
+    _leds[i] = color;
+  }
+}
+
 void LightManager::setSectionColor(LiLightSection sectionName, CRGB color)
 {
 
@@ -91,14 +115,4 @@ void LightManager::setColorValueForRange(PixelRange range, CRGB color)
   {
     _leds[i] = color;
   }
-}
-
-void LightManager::gradientAcrossPixels(uint32_t colorStart, uint32_t endColor)
-{
-
-  fill_gradient_RGB(_leds, 0, CRGB(colorStart), 64, CRGB(endColor));
-}
-
-void LightManager::randomSections() {
-  
 }

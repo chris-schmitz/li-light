@@ -29,25 +29,26 @@ public:
     _leds = leds;
   }
 
+  void setSectionRange(PixelRange range);
   void setSectionRange(LiLightSection section, int start, int end);
+
+  void setSectionColor(int rangeIndex, uint8_t red, uint8_t green, uint8_t blue);
+  void setSectionColor(int rangeIndex, CRGB color);
   void setSectionColor(LiLightSection section, uint8_t red, uint8_t green, uint8_t blue);
   void setSectionColor(LiLightSection section, uint32_t color);
   void setSectionColor(LiLightSection section, CRGB color);
 
-  void gradientAcrossBars(uint32_t colorStart, uint32_t endColor);
-
-  void setBars()
+  // ! Utility method
+  void printSections()
   {
-    bars[0 * sizeof(PixelRange)] = &barCodeBar1;
-    bars[1 * sizeof(PixelRange)] = &barCodeBar2;
-    bars[2 * sizeof(PixelRange)] = &barCodeBar3;
+    for (int i = 0; i < totalSections; i++)
+    {
+      char buffer[31];
+      sprintf(buffer, "Section %i - start: %i, end: %i", i, sections[i].start, sections[i].end);
+      Serial.println(buffer);
+    }
   }
 
-  PixelRange getBar1()
-  {
-    return barCodeBar1;
-  }
-  // ^ terrible way of organizing it, come back and adjust later
 private:
   CRGB *_leds;
   PixelRange barCodeBar1;
@@ -60,7 +61,9 @@ private:
   PixelRange graphMiddle;
   PixelRange graphLeft;
 
-  PixelRange *bars[6 * sizeof(PixelRange)];
+  int currentSectionIndex = 0;
+  uint8_t totalSections = 9;
+  PixelRange sections[6 * sizeof(PixelRange)];
 
   void setColorValueForRange(PixelRange range, CRGB color);
 };
