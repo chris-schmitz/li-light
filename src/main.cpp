@@ -23,7 +23,7 @@ CRGB leds[LED_COUNT];
 uint8_t hue = 253;
 uint8_t saturation = 255;
 
-LightManager lightManager = LightManager(leds);
+LightManager lightManager = LightManager(leds, LED_COUNT);
 
 void setupUltrasonicSensor()
 {
@@ -46,20 +46,9 @@ void setupLiLightManager()
   lightManager.setSectionRange(PixelRange{16, 19});
   lightManager.setSectionRange(PixelRange{20, 23});
 
-  lightManager.setSectionRange(PixelRange{24, 32});
-  lightManager.setSectionRange(PixelRange{33, 36});
-  lightManager.setSectionRange(PixelRange{37, 42});
-
-  lightManager.setSectionRange(BAR_CODE_1, 0, 3);
-  lightManager.setSectionRange(BAR_CODE_2, 4, 7);
-  lightManager.setSectionRange(BAR_CODE_3, 8, 11);
-  lightManager.setSectionRange(BAR_CODE_4, 12, 15);
-  lightManager.setSectionRange(BAR_CODE_5, 16, 19);
-  lightManager.setSectionRange(BAR_CODE_6, 20, 23);
-
-  lightManager.setSectionRange(GRAPH_RIGHT, 24, 32);
-  lightManager.setSectionRange(GRAPH_MIDDLE, 33, 36);
-  lightManager.setSectionRange(GRAPH_LEFT, 37, 42);
+  lightManager.setSectionRange(PixelRange{24, 31});
+  lightManager.setSectionRange(PixelRange{32, 35});
+  lightManager.setSectionRange(PixelRange{36, 41});
 }
 
 void setup()
@@ -122,6 +111,149 @@ int updateMovingAverage(int rawDistance)
   return currentSum / totalReadings;
 }
 
+void randomSections()
+{
+  for (int i = 0; i < 20; i++)
+  {
+    lightManager.lightRandomSections(1);
+    FastLED.show();
+    delay(100);
+  }
+}
+
+void barcodeSwipe()
+{
+  for (int i = 0; i < 6; i++) // * six being the number of bars in the barcode
+  {
+    Serial.print(i - 1);
+    Serial.print(", ");
+    // TODO: fix
+    // ! this is a dumb way of doing it. refactor
+    // if (i < 6)
+    lightManager.setSectionColor(i, CRGB(0x495057));
+    // if (i < 6)
+    lightManager.setSectionColor(i - 1, CRGB::Black);
+    // if (i < 6)
+    //   lightManager.setSectionColor(i - 2, CRGB(0xFFFFFF));
+    // if (i < 6)
+    //   lightManager.setSectionColor(i - 3, CRGB(0x6c757d));
+    // if (i < 6)
+    //   lightManager.setSectionColor(i - 4, CRGB(0x495057));
+    FastLED.show();
+    delay(100);
+  }
+  for (int i = 0; i < 6; i++) // * six being the number of bars in the barcode
+  {
+    lightManager.setSectionColor(i, CRGB::Black);
+  }
+  FastLED.show();
+
+  Serial.println("");
+  // delay(500);
+}
+
+uint32_t colors[] = {0xf8f9fa, 0xe9ecef, 0xdee2e6, 0xced4da, 0xadb5bd, 0x6c757d, 0x495057, 0x343a40, 0x212529, 0x000000};
+
+void gradualBarcodeScan()
+{
+  // * the state we want to push across the bars
+  // * this is a colleciton of colors indexes to use for each bar
+  // * each byte corresponds to a bar
+  byte frameState[] = {9, 9, 9, 9, 9, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9, 9, 9};
+
+  int totalFrames = 23;
+  for (int frame = 0; frame < totalFrames; frame++)
+  {
+    for (int sectionIndex = 0; sectionIndex < 6; sectionIndex++)
+    {
+      CRGB color = CRGB::Black;
+      if (sectionIndex + frame + 1 < totalFrames)
+      {
+        color = CRGB(colors[frameState[sectionIndex + frame]]);
+      }
+      lightManager.setSectionColor(sectionIndex, color);
+      FastLED.show();
+      // delay(10);
+    }
+    delay(10);
+  }
+}
+
+void fillSectionBySection()
+{
+  for (uint8_t i = 0; i < 9; i++)
+  {
+    lightManager.setSectionColor(i, CRGB::BlueViolet);
+    FastLED.show();
+    delay(100);
+  }
+  for (uint8_t i = 0; i < 9; i++)
+  {
+    lightManager.setSectionColor(i, CRGB::Black);
+    FastLED.show();
+    delay(100);
+  }
+}
+
+int level1[6] = {24, 31, 32, 35, 36, 41};
+int level2[6] = {25, 30, 33, 34, 37, 40};
+int level3[4] = {26, 29, 38, 39};
+int level4[2] = {27, 28};
+int raiseDelay = 500;
+void raiseGraphBars()
+{
+  for (uint8_t i = 0; i < 6; i++)
+  {
+    lightManager.setPixel(level1[i], CRGB::LimeGreen);
+  }
+  FastLED.show();
+  delay(raiseDelay);
+  for (uint8_t i = 0; i < 6; i++)
+  {
+    lightManager.setPixel(level2[i], CRGB::LimeGreen);
+  }
+  FastLED.show();
+  delay(raiseDelay);
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    lightManager.setPixel(level3[i], CRGB::LimeGreen);
+  }
+  FastLED.show();
+  delay(raiseDelay);
+  for (uint8_t i = 0; i < 2; i++)
+  {
+    lightManager.setPixel(level4[i], CRGB::LimeGreen);
+  }
+  FastLED.show();
+  delay(raiseDelay);
+}
+
+uint8_t brightnessLevels[] = {5, 10, 15, 25, 30, 64, 92, 128, 200, 255};
+void fadeInBars()
+{
+  for (uint8_t i = 0; i < sizeof(brightnessLevels) / sizeof(brightnessLevels[0]); i++)
+  {
+    Serial.println(i);
+    for (uint8_t j = 6; j < 9; j++)
+    {
+      lightManager.setSectionColor(j, CHSV(200, 200, brightnessLevels[i]));
+    }
+    FastLED.show();
+    delay(50);
+  }
+  for (uint8_t i = 0; i < sizeof(brightnessLevels) / sizeof(brightnessLevels[0]); i++)
+  {
+    Serial.println(i);
+    for (uint8_t j = 0; j < 6; j++)
+    {
+      lightManager.setSectionColor(j, CHSV(0, 0, brightnessLevels[i]));
+    }
+    FastLED.show();
+    delay(50);
+  }
+  Serial.println("---");
+}
+
 unsigned long colorChangeInterval = 500;
 unsigned long colorChangeLastChecked = 0;
 
@@ -140,64 +272,64 @@ void loop()
     lightManager.printSections();
   }
 
-  unsigned long now = millis();
-  if (now - colorChangeLastChecked > colorChangeInterval)
-  {
-    colorChangeLastChecked = now;
-    if (flip == true)
-    {
-      lightManager.setSectionColor(0, 255, 0, 255);
-      lightManager.setSectionColor(1, 0, 255, 255);
-      lightManager.setSectionColor(2, 255, 0, 255);
-      lightManager.setSectionColor(3, 0, 255, 255);
-      lightManager.setSectionColor(4, 255, 0, 255);
-      lightManager.setSectionColor(5, 0, 255, 255);
+  // unsigned long now = millis();
+  // if (now - colorChangeLastChecked > colorChangeInterval)
+  // {
+  //   colorChangeLastChecked = now;
 
-      lightManager.setSectionColor(6, 255, 0, 255);
-      lightManager.setSectionColor(7, 0, 255, 255);
-      lightManager.setSectionColor(8, 255, 0, 255);
-      // lightManager.setSectionColor(BAR_CODE_1, 255, 0, 255);
-      // lightManager.setSectionColor(BAR_CODE_2, 0, 255, 255);
-      // lightManager.setSectionColor(BAR_CODE_3, 255, 0, 255);
-      // lightManager.setSectionColor(BAR_CODE_4, 0, 255, 255);
-      // lightManager.setSectionColor(BAR_CODE_5, 255, 0, 255);
-      // lightManager.setSectionColor(BAR_CODE_6, 0, 255, 255);
+  //   int distance = updateMovingAverage(readSensor());
+  //   logDistance(distance);
+  //   //   updateLEDs(distance);
+  // }
 
-      // lightManager.setSectionColor(GRAPH_LEFT, 255, 0, 255);
-      // lightManager.setSectionColor(GRAPH_MIDDLE, 0, 255, 255);
-      // lightManager.setSectionColor(GRAPH_RIGHT, 255, 0, 255);
-      flip = false;
-    }
-    else
-    {
-      lightManager.setSectionColor(0, 0, 255, 255);
-      lightManager.setSectionColor(1, 255, 0, 255);
-      lightManager.setSectionColor(2, 0, 255, 255);
-      lightManager.setSectionColor(3, 255, 0, 255);
-      lightManager.setSectionColor(4, 0, 255, 255);
-      lightManager.setSectionColor(5, 255, 0, 255);
-
-      lightManager.setSectionColor(6, 0, 255, 255);
-      lightManager.setSectionColor(7, 255, 0, 255);
-      lightManager.setSectionColor(8, 0, 255, 255);
-      // lightManager.setSectionColor(BAR_CODE_2, 255, 0, 255);
-      // lightManager.setSectionColor(BAR_CODE_3, 0, 255, 255);
-      // lightManager.setSectionColor(BAR_CODE_4, 255, 0, 255);
-      // lightManager.setSectionColor(BAR_CODE_5, 0, 255, 255);
-      // lightManager.setSectionColor(BAR_CODE_6, 255, 0, 255);
-
-      // lightManager.setSectionColor(GRAPH_LEFT, 0, 255, 255);
-      // lightManager.setSectionColor(GRAPH_MIDDLE, 255, 0, 255);
-      // lightManager.setSectionColor(GRAPH_RIGHT, 0, 255, 255);
-      flip = true;
-    }
-    FastLED.show();
-
-    //   int distance = updateMovingAverage(readSensor());
-    //   logDistance(distance);
-    //   updateLEDs(distance);
-  }
-  // lightManager.gradientAcrossBars(CRGB::Black, CRGB::BlueViolet);
+  // lightManager.gradientAcrossBars(0, CRGB(0x8ecae6), 6, CRGB(0xffb703));
+  // lightManager.setSectionColor(6, CRGB(0xffb703));
+  // lightManager.setSectionColor(7, CRGB(0xffb703));
+  // lightManager.setSectionColor(8, CRGB(0xffb703));
+  // lightManager.gradientAcrossBars(7, CRGB::BlueViolet, 8, CRGB::Black);
   // FastLED.show();
+
+  // randomSections();
   // delay(100);
+  // barcodeSwipe();
+  lightManager.clear();
+  delay(1000);
+  gradualBarcodeScan();
+  // raiseGraphBars();
+  fadeInBars();
+  // fillSectionBySection();
+  delay(3000);
+}
+
+void flipColors()
+{
+  if (flip == true)
+  {
+    lightManager.setSectionColor(0, 255, 0, 255);
+    lightManager.setSectionColor(1, 0, 255, 255);
+    lightManager.setSectionColor(2, 255, 0, 255);
+    lightManager.setSectionColor(3, 0, 255, 255);
+    lightManager.setSectionColor(4, 255, 0, 255);
+    lightManager.setSectionColor(5, 0, 255, 255);
+
+    lightManager.setSectionColor(6, 255, 0, 255);
+    lightManager.setSectionColor(7, 0, 255, 255);
+    lightManager.setSectionColor(8, 255, 0, 255);
+    flip = false;
+  }
+  else
+  {
+    lightManager.setSectionColor(0, 0, 255, 255);
+    lightManager.setSectionColor(1, 255, 0, 255);
+    lightManager.setSectionColor(2, 0, 255, 255);
+    lightManager.setSectionColor(3, 255, 0, 255);
+    lightManager.setSectionColor(4, 0, 255, 255);
+    lightManager.setSectionColor(5, 255, 0, 255);
+
+    lightManager.setSectionColor(6, 0, 255, 255);
+    lightManager.setSectionColor(7, 255, 0, 255);
+    lightManager.setSectionColor(8, 0, 255, 255);
+    flip = true;
+  }
+  FastLED.show();
 }
