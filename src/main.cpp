@@ -13,7 +13,7 @@ long duration;
 float speedOfSound = 0.034;
 
 // * Tracking a moving average
-const int totalReadings = 50;
+const int totalReadings = 3;
 int sensorReadings[totalReadings];
 int currentIndex = 0;
 int currentSum = 0;
@@ -60,23 +60,6 @@ void setup()
   Serial.begin(9600);
 }
 
-void updateLEDs(int brightnessLevel)
-{
-  lightLevel = map(brightnessLevel, 0, 100, 255, 0);
-
-  // for (int i = 0; i < LED_COUNT; i++)
-  // {
-  //   hue += 1;
-  //   if (hue % 255 == 0)
-  //   {
-  //     hue = 0;
-  //   }
-  //   leds[i] = CHSV(hue, saturation, lightLevel);
-  // }
-  fill_solid(leds, LED_COUNT, CHSV(hue, saturation, lightLevel));
-  FastLED.show();
-}
-
 int readSensor()
 {
   digitalWrite(TRIGGER_PIN, LOW);
@@ -113,43 +96,9 @@ int updateMovingAverage(int rawDistance)
 
 void randomSections()
 {
-  for (int i = 0; i < 20; i++)
-  {
-    lightManager.lightRandomSections(1);
-    FastLED.show();
-    delay(100);
-  }
-}
-
-void barcodeSwipe()
-{
-  for (int i = 0; i < 6; i++) // * six being the number of bars in the barcode
-  {
-    Serial.print(i - 1);
-    Serial.print(", ");
-    // TODO: fix
-    // ! this is a dumb way of doing it. refactor
-    // if (i < 6)
-    lightManager.setSectionColor(i, CRGB(0x495057));
-    // if (i < 6)
-    lightManager.setSectionColor(i - 1, CRGB::Black);
-    // if (i < 6)
-    //   lightManager.setSectionColor(i - 2, CRGB(0xFFFFFF));
-    // if (i < 6)
-    //   lightManager.setSectionColor(i - 3, CRGB(0x6c757d));
-    // if (i < 6)
-    //   lightManager.setSectionColor(i - 4, CRGB(0x495057));
-    FastLED.show();
-    delay(100);
-  }
-  for (int i = 0; i < 6; i++) // * six being the number of bars in the barcode
-  {
-    lightManager.setSectionColor(i, CRGB::Black);
-  }
+  lightManager.lightRandomSections(1);
   FastLED.show();
-
-  Serial.println("");
-  // delay(500);
+  delay(100);
 }
 
 uint32_t colors[] = {0xf8f9fa, 0xe9ecef, 0xdee2e6, 0xced4da, 0xadb5bd, 0x6c757d, 0x495057, 0x343a40, 0x212529, 0x000000};
@@ -159,7 +108,7 @@ void gradualBarcodeScan()
   // * the state we want to push across the bars
   // * this is a colleciton of colors indexes to use for each bar
   // * each byte corresponds to a bar
-  byte frameState[] = {9, 9, 9, 9, 9, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9, 9, 9};
+  byte frameState[] = {9, 9, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9, 9, 9};
 
   int totalFrames = 23;
   for (int frame = 0; frame < totalFrames; frame++)
@@ -175,7 +124,7 @@ void gradualBarcodeScan()
       FastLED.show();
       // delay(10);
     }
-    delay(10);
+    delay(20);
   }
 }
 
@@ -241,6 +190,7 @@ void fadeInBars()
     FastLED.show();
     delay(50);
   }
+  delay(800);
   for (uint8_t i = 0; i < sizeof(brightnessLevels) / sizeof(brightnessLevels[0]); i++)
   {
     Serial.println(i);
@@ -254,82 +204,111 @@ void fadeInBars()
   Serial.println("---");
 }
 
-unsigned long colorChangeInterval = 500;
-unsigned long colorChangeLastChecked = 0;
-
-bool flip = false;
-void loop()
+enum TriggerEnum
 {
+  IDLE_PATTERN,
+  ACTIVATION_PATTERN,
+  SWITCH_IDLE
+};
 
-  if (false)
+int lastLoggedDistance = 0;
+const int activationPatternThreshold = 40;
+const int switchIdlePatternThreshold = 10;
+bool startDistanceCounter = false;
+int activationPatternCounter = 0;
+int switchIdlePatternCounter = 0;
+int activationPatternTotalCount = 5;
+int switchIdlePatternDistanceTotalCount = 2;
+TriggerEnum triggerOnCloseDistanceCheck(int distance)
+{
+  // TODO: consider adjustments
+  // ? do we really need the artifical delay here if we already an distance average?
+  // ? it seems like we could use one or the other
+  if (distance > activationPatternThreshold)
   {
-    Serial.print("size of int: ");
-    Serial.println(sizeof(int));
-    Serial.print("size of pixel range: ");
-    Serial.println(sizeof(PixelRange));
-    Serial.print("size of pixel range for bars: ");
-    Serial.println(6 * sizeof(PixelRange));
-    lightManager.printSections();
+    activationPatternCounter = 0;
+    switchIdlePatternCounter = 0;
+    return IDLE_PATTERN;
   }
 
-  // unsigned long now = millis();
-  // if (now - colorChangeLastChecked > colorChangeInterval)
-  // {
-  //   colorChangeLastChecked = now;
+  if (distance < activationPatternThreshold)
+  {
+    startDistanceCounter = true;
+  }
 
-  //   int distance = updateMovingAverage(readSensor());
-  //   logDistance(distance);
-  //   //   updateLEDs(distance);
-  // }
+  Serial.println(distance < activationPatternThreshold && distance >= switchIdlePatternThreshold);
+  if (distance < activationPatternThreshold && distance >= switchIdlePatternThreshold)
+  {
+    activationPatternCounter++;
+  }
+  else if (distance < switchIdlePatternThreshold)
+  {
+    switchIdlePatternCounter++;
+  }
 
-  // lightManager.gradientAcrossBars(0, CRGB(0x8ecae6), 6, CRGB(0xffb703));
-  // lightManager.setSectionColor(6, CRGB(0xffb703));
-  // lightManager.setSectionColor(7, CRGB(0xffb703));
-  // lightManager.setSectionColor(8, CRGB(0xffb703));
-  // lightManager.gradientAcrossBars(7, CRGB::BlueViolet, 8, CRGB::Black);
-  // FastLED.show();
+  // Serial.print("activationPatternCounter: ");
+  // Serial.println(activationPatternCounter);
+  // Serial.print("activationPatterntotal: ");
+  // Serial.println(activationPatternTotalCount);
+  // Serial.print("switchIdlePatternCounter: ");
+  // Serial.println(switchIdlePatternCounter);
+  // Serial.print("switch idle total count: ");
+  // Serial.println(switchIdlePatternDistanceTotalCount);
 
-  // randomSections();
-  // delay(100);
-  // barcodeSwipe();
-  lightManager.clear();
-  delay(1000);
-  gradualBarcodeScan();
-  // raiseGraphBars();
-  fadeInBars();
-  // fillSectionBySection();
-  delay(3000);
+  if (activationPatternCounter >= activationPatternTotalCount)
+  {
+    activationPatternCounter = 0;
+    switchIdlePatternCounter = 0;
+    return ACTIVATION_PATTERN;
+  }
+
+  if (switchIdlePatternCounter >= switchIdlePatternDistanceTotalCount)
+  {
+    activationPatternCounter = 0;
+    switchIdlePatternCounter = 0;
+    return SWITCH_IDLE;
+  }
+
+  // TODO: restructure
+  // * we need to return this idle pattern because _something_needs to be returned,
+  // * and maybe it's the right decision, but this structure is messy
+  return IDLE_PATTERN;
 }
 
-void flipColors()
+unsigned long distanceCheckInterval = 10;
+unsigned long distanceLastChecked = 0;
+
+void loop()
 {
-  if (flip == true)
-  {
-    lightManager.setSectionColor(0, 255, 0, 255);
-    lightManager.setSectionColor(1, 0, 255, 255);
-    lightManager.setSectionColor(2, 255, 0, 255);
-    lightManager.setSectionColor(3, 0, 255, 255);
-    lightManager.setSectionColor(4, 255, 0, 255);
-    lightManager.setSectionColor(5, 0, 255, 255);
+  unsigned long now = millis();
 
-    lightManager.setSectionColor(6, 255, 0, 255);
-    lightManager.setSectionColor(7, 0, 255, 255);
-    lightManager.setSectionColor(8, 255, 0, 255);
-    flip = false;
-  }
-  else
+  if (now - distanceLastChecked > distanceCheckInterval)
   {
-    lightManager.setSectionColor(0, 0, 255, 255);
-    lightManager.setSectionColor(1, 255, 0, 255);
-    lightManager.setSectionColor(2, 0, 255, 255);
-    lightManager.setSectionColor(3, 255, 0, 255);
-    lightManager.setSectionColor(4, 0, 255, 255);
-    lightManager.setSectionColor(5, 255, 0, 255);
+    distanceLastChecked = now;
+    lastLoggedDistance = updateMovingAverage(readSensor());
 
-    lightManager.setSectionColor(6, 0, 255, 255);
-    lightManager.setSectionColor(7, 255, 0, 255);
-    lightManager.setSectionColor(8, 0, 255, 255);
-    flip = true;
+    logDistance(lastLoggedDistance); // ! test method
+
+    TriggerEnum currentTrigger = triggerOnCloseDistanceCheck(lastLoggedDistance);
+
+    switch (currentTrigger)
+    {
+    case ACTIVATION_PATTERN:
+      Serial.println("activation pattern");
+      lightManager.clear();
+      delay(600);
+      gradualBarcodeScan();
+      delay(200);
+      fadeInBars();
+      // * random sparkles??
+      delay(3000);
+      break;
+    case SWITCH_IDLE:
+      Serial.println("SWITCH IDLE");
+      break;
+    default:
+      randomSections();
+      break;
+    }
   }
-  FastLED.show();
 }

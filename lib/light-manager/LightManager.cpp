@@ -66,8 +66,12 @@ void LightManager::lightRandomSections(int numberOfSections)
   int randomIndex1 = random(0, _totalSections);
   int randomIndex2 = random(0, _totalSections);
 
-  setSectionColor(randomIndex1, CRGB::LightSkyBlue);
-  setSectionColor(randomIndex2, CRGB::LightSkyBlue);
+  CRGB randomColor1 = CRGB(random(20, 255), random(20, 255), random(20, 255));
+  CRGB randomColor2 = CRGB(random(20, 255), random(20, 255), random(20, 255));
+
+  // setSectionColor(randomIndex1, CRGB::LightSkyBlue);
+  setSectionColor(randomIndex1, randomColor1);
+  setSectionColor(randomIndex2, randomColor2);
 }
 
 void LightManager::setPixel(int index, CRGB color)
