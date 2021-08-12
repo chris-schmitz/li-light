@@ -1,4 +1,5 @@
 #include "LightManager.h"
+#include "PatternRunner.h"
 #include <Arduino.h>
 
 #include <FastLED.h>
@@ -9,6 +10,7 @@
 #define LED_STRIP 3
 #define LED_COUNT 42
 
+bool LOG_DISTANCE_TO_MONITOR = false;
 long duration;
 float speedOfSound = 0.034;
 
@@ -24,6 +26,7 @@ uint8_t hue = 253;
 uint8_t saturation = 255;
 
 LightManager lightManager = LightManager(leds, LED_COUNT);
+PatternRunner patternRunner = PatternRunner(&lightManager);
 
 void setupUltrasonicSensor()
 {
@@ -38,7 +41,6 @@ void setupLedStrip()
 
 void setupLiLightManager()
 {
-
   lightManager.setSectionRange(PixelRange{0, 3});
   lightManager.setSectionRange(PixelRange{4, 7});
   lightManager.setSectionRange(PixelRange{8, 11});
@@ -94,116 +96,6 @@ int updateMovingAverage(int rawDistance)
   return currentSum / totalReadings;
 }
 
-void randomSections()
-{
-  lightManager.lightRandomSections(1);
-  FastLED.show();
-  delay(100);
-}
-
-uint32_t colors[] = {0xf8f9fa, 0xe9ecef, 0xdee2e6, 0xced4da, 0xadb5bd, 0x6c757d, 0x495057, 0x343a40, 0x212529, 0x000000};
-
-void gradualBarcodeScan()
-{
-  // * the state we want to push across the bars
-  // * this is a colleciton of colors indexes to use for each bar
-  // * each byte corresponds to a bar
-  byte frameState[] = {9, 9, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9, 9, 9};
-
-  int totalFrames = 23;
-  for (int frame = 0; frame < totalFrames; frame++)
-  {
-    for (int sectionIndex = 0; sectionIndex < 6; sectionIndex++)
-    {
-      CRGB color = CRGB::Black;
-      if (sectionIndex + frame + 1 < totalFrames)
-      {
-        color = CRGB(colors[frameState[sectionIndex + frame]]);
-      }
-      lightManager.setSectionColor(sectionIndex, color);
-      FastLED.show();
-      // delay(10);
-    }
-    delay(20);
-  }
-}
-
-void fillSectionBySection()
-{
-  for (uint8_t i = 0; i < 9; i++)
-  {
-    lightManager.setSectionColor(i, CRGB::BlueViolet);
-    FastLED.show();
-    delay(100);
-  }
-  for (uint8_t i = 0; i < 9; i++)
-  {
-    lightManager.setSectionColor(i, CRGB::Black);
-    FastLED.show();
-    delay(100);
-  }
-}
-
-int level1[6] = {24, 31, 32, 35, 36, 41};
-int level2[6] = {25, 30, 33, 34, 37, 40};
-int level3[4] = {26, 29, 38, 39};
-int level4[2] = {27, 28};
-int raiseDelay = 500;
-void raiseGraphBars()
-{
-  for (uint8_t i = 0; i < 6; i++)
-  {
-    lightManager.setPixel(level1[i], CRGB::LimeGreen);
-  }
-  FastLED.show();
-  delay(raiseDelay);
-  for (uint8_t i = 0; i < 6; i++)
-  {
-    lightManager.setPixel(level2[i], CRGB::LimeGreen);
-  }
-  FastLED.show();
-  delay(raiseDelay);
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    lightManager.setPixel(level3[i], CRGB::LimeGreen);
-  }
-  FastLED.show();
-  delay(raiseDelay);
-  for (uint8_t i = 0; i < 2; i++)
-  {
-    lightManager.setPixel(level4[i], CRGB::LimeGreen);
-  }
-  FastLED.show();
-  delay(raiseDelay);
-}
-
-uint8_t brightnessLevels[] = {5, 10, 15, 25, 30, 64, 92, 128, 200, 255};
-void fadeInBars()
-{
-  for (uint8_t i = 0; i < sizeof(brightnessLevels) / sizeof(brightnessLevels[0]); i++)
-  {
-    Serial.println(i);
-    for (uint8_t j = 6; j < 9; j++)
-    {
-      lightManager.setSectionColor(j, CHSV(200, 200, brightnessLevels[i]));
-    }
-    FastLED.show();
-    delay(50);
-  }
-  delay(800);
-  for (uint8_t i = 0; i < sizeof(brightnessLevels) / sizeof(brightnessLevels[0]); i++)
-  {
-    Serial.println(i);
-    for (uint8_t j = 0; j < 6; j++)
-    {
-      lightManager.setSectionColor(j, CHSV(0, 0, brightnessLevels[i]));
-    }
-    FastLED.show();
-    delay(50);
-  }
-  Serial.println("---");
-}
-
 enum TriggerEnum
 {
   IDLE_PATTERN,
@@ -246,15 +138,6 @@ TriggerEnum triggerOnCloseDistanceCheck(int distance)
     switchIdlePatternCounter++;
   }
 
-  // Serial.print("activationPatternCounter: ");
-  // Serial.println(activationPatternCounter);
-  // Serial.print("activationPatterntotal: ");
-  // Serial.println(activationPatternTotalCount);
-  // Serial.print("switchIdlePatternCounter: ");
-  // Serial.println(switchIdlePatternCounter);
-  // Serial.print("switch idle total count: ");
-  // Serial.println(switchIdlePatternDistanceTotalCount);
-
   if (activationPatternCounter >= activationPatternTotalCount)
   {
     activationPatternCounter = 0;
@@ -287,7 +170,10 @@ void loop()
     distanceLastChecked = now;
     lastLoggedDistance = updateMovingAverage(readSensor());
 
-    logDistance(lastLoggedDistance); // ! test method
+    if (LOG_DISTANCE_TO_MONITOR)
+    {
+      logDistance(lastLoggedDistance); // ! test method
+    }
 
     TriggerEnum currentTrigger = triggerOnCloseDistanceCheck(lastLoggedDistance);
 
@@ -297,17 +183,18 @@ void loop()
       Serial.println("activation pattern");
       lightManager.clear();
       delay(600);
-      gradualBarcodeScan();
+      patternRunner.gradualBarcodeScan();
       delay(200);
-      fadeInBars();
+      patternRunner.fadeInBars();
       // * random sparkles??
       delay(3000);
       break;
     case SWITCH_IDLE:
-      Serial.println("SWITCH IDLE");
+      patternRunner.cycleIdlePattern();
       break;
     default:
-      randomSections();
+      patternRunner.runCurrentIdlePattern();
+      // patternRunner.randomSections();
       break;
     }
   }
