@@ -1,12 +1,7 @@
 #pragma once
+#include "../pixel-range/PixelRange.h"
 #include "Arduino.h"
 #include "FastLED.h"
-
-struct PixelRange
-{
-  int start;
-  int end;
-};
 
 class LightManager
 {
@@ -17,19 +12,13 @@ public:
     _totalLeds = totalLEDs;
   }
 
-  void clear()
-  {
-    for (int i = 0; i < _totalLeds; i++)
-    {
-      _leds[i] = CRGB::Black;
-    }
-    FastLED.show();
-  }
+  void clear();
 
   void setSectionRange(PixelRange range);
 
-  void setSectionColor(int rangeIndex, uint8_t red, uint8_t green, uint8_t blue);
-  void setSectionColor(int rangeIndex, CRGB color);
+  void setSectionColor(int sectionIndex, uint8_t red, uint8_t green, uint8_t blue);
+  void setSectionColor(int sectionIndex, CRGB color);
+  void setSectionLevelColor(int sectionIndex, uint8_t _rainbowMiddleOutColorLevelInSection, CRGB color);
 
   void gradientAcrossBars(int startIndex, CRGB startColor, int endIndex, CRGB endColor);
   void lightRandomSections(int numberOfSections);
@@ -42,7 +31,7 @@ public:
     for (int i = 0; i < _totalSections; i++)
     {
       char buffer[31];
-      sprintf(buffer, "Section %i - start: %i, end: %i", i, _sections[i].start, _sections[i].end);
+      sprintf(buffer, "Section %i - start: %i, end: %i", i, _sections[i].getStart(), _sections[i].getEnd());
       Serial.println(buffer);
     }
   }

@@ -41,20 +41,22 @@ void setupLedStrip()
 
 void setupLiLightManager()
 {
-  lightManager.setSectionRange(PixelRange{0, 3});
-  lightManager.setSectionRange(PixelRange{4, 7});
-  lightManager.setSectionRange(PixelRange{8, 11});
-  lightManager.setSectionRange(PixelRange{12, 15});
-  lightManager.setSectionRange(PixelRange{16, 19});
-  lightManager.setSectionRange(PixelRange{20, 23});
+  lightManager.setSectionRange(PixelRange(1, 0, 3));
+  lightManager.setSectionRange(PixelRange(1, 4, 7));
+  lightManager.setSectionRange(PixelRange(1, 8, 11));
+  lightManager.setSectionRange(PixelRange(1, 12, 15));
+  lightManager.setSectionRange(PixelRange(1, 16, 19));
+  lightManager.setSectionRange(PixelRange(1, 20, 23));
 
-  lightManager.setSectionRange(PixelRange{24, 31});
-  lightManager.setSectionRange(PixelRange{32, 35});
-  lightManager.setSectionRange(PixelRange{36, 41});
+  lightManager.setSectionRange(PixelRange(2, 24, 31));
+  lightManager.setSectionRange(PixelRange(2, 32, 35));
+  lightManager.setSectionRange(PixelRange(2, 36, 41));
 }
 
 void setup()
 {
+  // TODO: consider abstraction
+  // * it might be nice to pull the ultrasonic stuff out to a class too
   setupUltrasonicSensor();
   setupLedStrip();
   setupLiLightManager();
@@ -113,9 +115,6 @@ int activationPatternTotalCount = 5;
 int switchIdlePatternDistanceTotalCount = 2;
 TriggerEnum triggerOnCloseDistanceCheck(int distance)
 {
-  // TODO: consider adjustments
-  // ? do we really need the artifical delay here if we already an distance average?
-  // ? it seems like we could use one or the other
   if (distance > activationPatternThreshold)
   {
     activationPatternCounter = 0;
@@ -181,20 +180,12 @@ void loop()
     {
     case ACTIVATION_PATTERN:
       Serial.println("activation pattern");
-      lightManager.clear();
-      delay(600);
-      patternRunner.gradualBarcodeScan();
-      delay(200);
-      patternRunner.fadeInBars();
-      // * random sparkles??
-      delay(3000);
       break;
     case SWITCH_IDLE:
       patternRunner.cycleIdlePattern();
       break;
     default:
       patternRunner.runCurrentIdlePattern();
-      // patternRunner.randomSections();
       break;
     }
   }

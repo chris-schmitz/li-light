@@ -17,13 +17,13 @@ void LightManager::setSectionColor(int sectionIndex, uint8_t red, uint8_t green,
 void LightManager::setSectionColor(int sectionIndex, CRGB color)
 {
   char buffer[31];
-  sprintf(buffer, "Section %i - start: %i, end: %i", sectionIndex, _sections[sectionIndex].start, _sections[sectionIndex].end);
+  sprintf(buffer, "Section %i - start: %i, end: %i", sectionIndex, _sections[sectionIndex].getStart(), _sections[sectionIndex].getEnd());
   // Serial.println(buffer);
 
   if (sectionIndex < 0 || sectionIndex > _totalSections)
     return;
 
-  for (int i = _sections[sectionIndex].start; i <= _sections[sectionIndex].end; i++)
+  for (int i = _sections[sectionIndex].getStart(); i <= _sections[sectionIndex].getEnd(); i++)
   {
     _leds[i] = color;
   }
@@ -31,7 +31,7 @@ void LightManager::setSectionColor(int sectionIndex, CRGB color)
 
 void LightManager::setColorValueForRange(PixelRange range, CRGB color)
 {
-  for (uint8_t i = range.start; i < range.end; i++)
+  for (uint8_t i = range.getStart(); i < range.getEnd(); i++)
   {
     _leds[i] = color;
   }
@@ -49,11 +49,11 @@ void LightManager::gradientAcrossBars(int startIndex, CRGB startColor, int endIn
   {
     if (i % 2 == 0)
     {
-      fill_gradient_RGB(_leds, _sections[i].start, startColor, _sections[i].end, endColor);
+      fill_gradient_RGB(_leds, _sections[i].getStart(), startColor, _sections[i].getEnd(), endColor);
     }
     else
     {
-      fill_gradient_RGB(_leds, _sections[i].start, endColor, _sections[i].end, startColor);
+      fill_gradient_RGB(_leds, _sections[i].getStart(), endColor, _sections[i].getEnd(), startColor);
     }
   }
 }
@@ -77,4 +77,32 @@ void LightManager::lightRandomSections(int numberOfSections)
 void LightManager::setPixel(int index, CRGB color)
 {
   _leds[index] = color;
+}
+
+void LightManager::clear()
+{
+  for (int i = 0; i < _totalLeds; i++)
+  {
+    _leds[i] = CRGB::Black;
+  }
+  FastLED.show();
+}
+
+void LightManager::setSectionLevelColor(int sectionIndex, uint8_t sectionPixelLevel, CRGB color)
+{
+  bool reverse = sectionIndex % 2 == 0; // TODO: where do we want to put this concept?
+
+  // * if we're not reversed, grab the index that is the start + level
+  // * if we are reversed, grab the end index - level
+
+  if (reverse)
+  {
+    int targetPixelIndex = _sections[sectionIndex].getEnd() - sectionPixelLevel;
+    Serial.print("section: ");
+    Serial.print(sectionIndex);
+    Serial.print(", target pixel: ");
+    Serial.println(targetPixelIndex);
+    _leds[targetPixelIndex] = color;
+    FastLED.show();
+  }
 }
