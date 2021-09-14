@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include <cstdint>
 
 class PixelRange
 {
@@ -10,6 +10,7 @@ public:
   void setReverseIteration(bool reverse);
   uint8_t getNextIndex();
   uint8_t getCurrentIndex();
+  int getrRowCount();
 
   int getRowCount();
   int getStart();

@@ -1,7 +1,7 @@
 #pragma once
 #include "../pixel-range/PixelRange.h"
-#include "Arduino.h"
-#include "FastLED.h"
+// #include <Arduino.h>
+#include <FastLED.h>
 
 class LightManager
 {
