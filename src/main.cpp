@@ -1,6 +1,8 @@
-#include "LightManager.h"
 #include "PatternRunner.h"
+#include "TriggerTracker.h"
+#include "UltrasonicManager.h"
 #include <Arduino.h>
+#include <SectionManager.h>
 
 #include <FastLED.h>
 
@@ -10,183 +12,92 @@
 #define LED_STRIP 3
 #define LED_COUNT 42
 
-bool LOG_DISTANCE_TO_MONITOR = false;
-long duration;
-float speedOfSound = 0.034;
-
-// * Tracking a moving average
-const int totalReadings = 3;
-int sensorReadings[totalReadings];
-int currentIndex = 0;
-int currentSum = 0;
+#define LOG_TO_SERIAL_MONITOR true
 
 uint8_t lightLevel;
 CRGB leds[LED_COUNT];
 uint8_t hue = 253;
 uint8_t saturation = 255;
 
-LightManager lightManager = LightManager(leds, LED_COUNT);
-PatternRunner patternRunner = PatternRunner(&lightManager);
-
-void setupUltrasonicSensor()
-{
-  pinMode(TRIGGER_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
-}
+UltrasonicManager ultrasonicManager = UltrasonicManager(TRIGGER_PIN, ECHO_PIN);
+SectionManager sectionManager = SectionManager(leds);
+PatternRunner patternRunner = PatternRunner(&sectionManager);
+TriggerTracker triggerTracker = TriggerTracker(
+    PatternTriggerLimits(IDLE_PATTERN, 10, 2),
+    PatternTriggerLimits(ACTIVATION_PATTERN, 40, 5));
 
 void setupLedStrip()
 {
   FastLED.addLeds<NEOPIXEL, LED_STRIP>(leds, LED_COUNT);
 }
 
-void setupLiLightManager()
+void setupSectionManager()
 {
-  lightManager.setSectionRange(PixelRange(1, 0, 3));
-  lightManager.setSectionRange(PixelRange(1, 4, 7));
-  lightManager.setSectionRange(PixelRange(1, 8, 11));
-  lightManager.setSectionRange(PixelRange(1, 12, 15));
-  lightManager.setSectionRange(PixelRange(1, 16, 19));
-  lightManager.setSectionRange(PixelRange(1, 20, 23));
+  sectionManager.addSections(9);
 
-  lightManager.setSectionRange(PixelRange(2, 24, 31));
-  lightManager.setSectionRange(PixelRange(2, 32, 35));
-  lightManager.setSectionRange(PixelRange(2, 36, 41));
+  sectionManager.addRangeToSection(0, 0, 3, true);
+  sectionManager.addRangeToSection(1, 4, 7, false);
+  sectionManager.addRangeToSection(2, 8, 11, true);
+  sectionManager.addRangeToSection(3, 12, 15);
+  sectionManager.addRangeToSection(4, 16, 19, true);
+  sectionManager.addRangeToSection(5, 20, 23);
+
+  sectionManager.addRangeToSection(6, 24, 27);
+  sectionManager.addRangeToSection(6, 28, 31, true);
+
+  sectionManager.addRangeToSection(7, 32, 33);
+  sectionManager.addRangeToSection(7, 34, 35, true);
+
+  sectionManager.addRangeToSection(8, 36, 38);
+  sectionManager.addRangeToSection(8, 39, 41, true);
 }
 
 void setup()
 {
-  // TODO: consider abstraction
-  // * it might be nice to pull the ultrasonic stuff out to a class too
-  setupUltrasonicSensor();
-  setupLedStrip();
-  setupLiLightManager();
-
   Serial.begin(9600);
+
+  setupSectionManager();
+  ultrasonicManager.begin();
+
+  setupLedStrip();
 }
 
-int readSensor()
-{
-  digitalWrite(TRIGGER_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIGGER_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIGGER_PIN, LOW);
-
-  duration = pulseIn(ECHO_PIN, HIGH);
-  // * Speed of sound wave divided by 2 (out and back)
-  return duration * speedOfSound / 2;
-}
-
-void logDistance(int distance)
-{
-  Serial.print(distance);
-  Serial.print(" cm");
-  for (int i = 0; i < distance; i++)
-  {
-    Serial.print("-");
-  }
-  Serial.println("|");
-}
-
-int updateMovingAverage(int rawDistance)
-{
-  currentSum -= sensorReadings[currentIndex];
-  sensorReadings[currentIndex] = rawDistance;
-  currentSum += rawDistance;
-  currentIndex = (currentIndex + 1) % totalReadings;
-
-  return currentSum / totalReadings;
-}
-
-enum TriggerEnum
-{
-  IDLE_PATTERN,
-  ACTIVATION_PATTERN,
-  SWITCH_IDLE
-};
-
+unsigned long frameInterval = 10;
+unsigned long lastFrame = 0;
 int lastLoggedDistance = 0;
-const int activationPatternThreshold = 40;
-const int switchIdlePatternThreshold = 10;
-bool startDistanceCounter = false;
-int activationPatternCounter = 0;
-int switchIdlePatternCounter = 0;
-int activationPatternTotalCount = 5;
-int switchIdlePatternDistanceTotalCount = 2;
-TriggerEnum triggerOnCloseDistanceCheck(int distance)
+
+void renderFrame()
 {
-  if (distance > activationPatternThreshold)
+  lastLoggedDistance = ultrasonicManager.getAveragedDistance();
+
+  if (LOG_TO_SERIAL_MONITOR)
   {
-    activationPatternCounter = 0;
-    switchIdlePatternCounter = 0;
-    return IDLE_PATTERN;
+    ultrasonicManager.logDistance(lastLoggedDistance); // ! test method
   }
 
-  if (distance < activationPatternThreshold)
-  {
-    startDistanceCounter = true;
-  }
+  TriggerEnum currentTrigger = triggerTracker.getTriggerByDistance(lastLoggedDistance);
 
-  Serial.println(distance < activationPatternThreshold && distance >= switchIdlePatternThreshold);
-  if (distance < activationPatternThreshold && distance >= switchIdlePatternThreshold)
+  switch (currentTrigger)
   {
-    activationPatternCounter++;
+  case ACTIVATION_PATTERN:
+    Serial.println("activation pattern");
+    break;
+  case SWITCH_IDLE:
+    patternRunner.cycleIdlePattern();
+    break;
+  default:
+    patternRunner.runCurrentIdlePattern();
+    break;
   }
-  else if (distance < switchIdlePatternThreshold)
-  {
-    switchIdlePatternCounter++;
-  }
-
-  if (activationPatternCounter >= activationPatternTotalCount)
-  {
-    activationPatternCounter = 0;
-    switchIdlePatternCounter = 0;
-    return ACTIVATION_PATTERN;
-  }
-
-  if (switchIdlePatternCounter >= switchIdlePatternDistanceTotalCount)
-  {
-    activationPatternCounter = 0;
-    switchIdlePatternCounter = 0;
-    return SWITCH_IDLE;
-  }
-
-  // TODO: restructure
-  // * we need to return this idle pattern because _something_needs to be returned,
-  // * and maybe it's the right decision, but this structure is messy
-  return IDLE_PATTERN;
 }
-
-unsigned long distanceCheckInterval = 10;
-unsigned long distanceLastChecked = 0;
 
 void loop()
 {
   unsigned long now = millis();
 
-  if (now - distanceLastChecked > distanceCheckInterval)
+  if (now - lastFrame > frameInterval)
   {
-    distanceLastChecked = now;
-    lastLoggedDistance = updateMovingAverage(readSensor());
-
-    if (LOG_DISTANCE_TO_MONITOR)
-    {
-      logDistance(lastLoggedDistance); // ! test method
-    }
-
-    TriggerEnum currentTrigger = triggerOnCloseDistanceCheck(lastLoggedDistance);
-
-    switch (currentTrigger)
-    {
-    case ACTIVATION_PATTERN:
-      Serial.println("activation pattern");
-      break;
-    case SWITCH_IDLE:
-      patternRunner.cycleIdlePattern();
-      break;
-    default:
-      patternRunner.runCurrentIdlePattern();
-      break;
-    }
+    lastFrame = now;
+    renderFrame();
   }
 }

@@ -12,7 +12,9 @@ void PatternRunner::runCurrentIdlePattern()
     nonBlockingSectionBySection();
     break;
   case RAINBOW_MIDDLE_OUT:
-    rainbowMiddleOut();
+    Serial.println("---> rainbow middle in!");
+    rainbowMiddleIn();
+    // rainbowMiddleOut();
     break;
   }
 }
@@ -24,12 +26,7 @@ void PatternRunner::cycleIdlePattern()
   {
     _idlePatternCycleLastChecked = now;
     int newIndex = (_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS;
-    Serial.print("current pattern index: ");
-    Serial.println(_currentIdlePattern);
-    Serial.print("New idle pattern index: ");
-    Serial.println(newIndex);
-    Serial.print("total enums: ");
-    Serial.println(TOTAL_NUMBER_OF_IDLE_PATTERNS);
+
     _currentIdlePattern = static_cast<IdlePatterns>((_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS);
     FastLED.clear(true);
   }
@@ -37,7 +34,7 @@ void PatternRunner::cycleIdlePattern()
 
 void PatternRunner::scanAndFadeIn()
 {
-  _lightManager->clear();
+  _sectionManager->clearAllSections();
   delay(600);
   gradualBarcodeScan();
   delay(200);
@@ -48,9 +45,9 @@ void PatternRunner::scanAndFadeIn()
 
 void PatternRunner::randomSections()
 {
-  _lightManager->lightRandomSections(1);
+  _lightRandomSections(1);
   FastLED.show();
-  delay(100);
+  delay(200);
 }
 
 void PatternRunner::gradualBarcodeScan()
@@ -70,7 +67,8 @@ void PatternRunner::gradualBarcodeScan()
       {
         color = CRGB(_barcodeScanColors[frameState[sectionIndex + frame]]);
       }
-      _lightManager->setSectionColor(sectionIndex, color);
+      _sectionManager->fillSectionWithColor(sectionIndex, color, FillStyle(ALL_AT_ONCE));
+      // _lightManager->setSectionColor(sectionIndex, color);
       FastLED.show();
     }
     delay(20);
@@ -85,11 +83,13 @@ void PatternRunner::nonBlockingSectionBySection()
     lastIdleSeciontBySectionCheck = now;
     if (_idlePatternSectionBySectionFill)
     {
-      _lightManager->setSectionColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Aquamarine);
+      _sectionManager->fillSectionWithColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Aquamarine, FillStyle(ALL_AT_ONCE));
+      // _lightManager->setSectionColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Aquamarine);
     }
     else
     {
-      _lightManager->setSectionColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Black);
+      _sectionManager->fillSectionWithColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Black, FillStyle(ALL_AT_ONCE));
+      // _lightManager->setSectionColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Black);
     }
     FastLED.show();
 
@@ -105,13 +105,15 @@ void PatternRunner::fillSectionBySection()
 {
   for (uint8_t i = 0; i < 9; i++)
   {
-    _lightManager->setSectionColor(i, CRGB::BlueViolet);
+    _sectionManager->fillSectionWithColor(i, CRGB::BlueViolet, FillStyle(ALL_AT_ONCE));
+    // _lightManager->setSectionColor(i, CRGB::BlueViolet);
     FastLED.show();
     delay(100);
   }
   for (uint8_t i = 0; i < 9; i++)
   {
-    _lightManager->setSectionColor(i, CRGB::Black);
+    _sectionManager->fillSectionWithColor(i, CRGB::Black, FillStyle(ALL_AT_ONCE));
+    // _lightManager->setSectionColor(i, CRGB::Black);
     FastLED.show();
     delay(100);
   }
@@ -123,7 +125,7 @@ void PatternRunner::fadeInBars()
   {
     for (uint8_t j = 6; j < 9; j++)
     {
-      _lightManager->setSectionColor(j, CHSV(200, 200, _barGraphFadeInBrightnessLevels[i]));
+      _sectionManager->fillSectionWithColor(j, CHSV(200, 200, _barGraphFadeInBrightnessLevels[i]), FillStyle(ALL_AT_ONCE));
     }
     FastLED.show();
     delay(50);
@@ -133,10 +135,32 @@ void PatternRunner::fadeInBars()
   {
     for (uint8_t j = 0; j < 6; j++)
     {
-      _lightManager->setSectionColor(j, CHSV(0, 0, _barGraphFadeInBrightnessLevels[i]));
+      _sectionManager->fillSectionWithColor(j, CHSV(0, 0, _barGraphFadeInBrightnessLevels[i]), FillStyle(ALL_AT_ONCE));
     }
     FastLED.show();
     delay(50);
+  }
+}
+
+void PatternRunner::rainbowMiddleIn()
+{
+  uint16_t level, wheelPosition;
+
+  for (wheelPosition = 0; wheelPosition < 256; wheelPosition++)
+  {
+    for (level = 0; level < 4; level++)
+    {
+
+      uint32_t color = Wheel((level * 20 + wheelPosition) & 255);
+      for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
+      {
+        // _sectionManager->getSection(i).setColorAtLevel(level, color, true);
+        _sectionManager->setColorAtLocalIndex(i, level, color);
+        FastLED.show();
+      }
+
+      delay(10);
+    }
   }
 }
 
@@ -166,9 +190,33 @@ void PatternRunner::rainbowMiddleOut()
     Serial.println("--------");
     for (uint8_t section = 0; section < 9; section++) // TODO bring in total sections
     {
-      _lightManager->setSectionLevelColor(section, _rainbowMiddleOutColorLevelInSection, color);
+      _sectionManager->setColorAtLocalIndex(section, _rainbowMiddleOutColorLevelInSection, color);
+      FastLED.show();
+      // _lightManager->setSectionLevelColor(section, _rainbowMiddleOutColorLevelInSection, color);
     }
     _rainbowMiddleOutColorWheelIndex++;
     _rainbowMiddleOutColorLevelInSection++;
   }
+}
+
+void PatternRunner::_lightRandomSections(int numberOfSections)
+{
+  _sectionManager->clearAllSections();
+
+  // fill_solid(_leds, _totalLeds, CRGB::Black);
+
+  int randomIndex1 = random(0, _sectionManager->getSectionCount());
+  int randomIndex2 = random(0, _sectionManager->getSectionCount());
+
+  CRGB randomColor1 = CRGB(random(20, 255), random(20, 255), random(20, 255));
+  CRGB randomColor2 = CRGB(random(20, 255), random(20, 255), random(20, 255));
+
+  char buffer[100];
+  sprintf(buffer, "Random color 1: %d, Random color 2: %d", randomColor1, randomColor2);
+  Serial.println(buffer);
+
+  _sectionManager->fillSectionWithColor(randomIndex1, randomColor1, FillStyle(ALL_AT_ONCE));
+  _sectionManager->fillSectionWithColor(randomIndex2, randomColor2, FillStyle(ALL_AT_ONCE));
+
+  FastLED.show();
 }

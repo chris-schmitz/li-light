@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../light-manager/LightManager.h"
+// #include "../light-manager/LightManager.h"
 #include "FastLED.h"
+#include <SectionManager.h>
 
 enum IdlePatterns
 {
@@ -14,9 +15,7 @@ const uint8_t TOTAL_NUMBER_OF_IDLE_PATTERNS = 3;
 class PatternRunner
 {
 public:
-  PatternRunner(LightManager *lightManager) : _lightManager(lightManager)
-  {
-  }
+  PatternRunner(SectionManager *manager) : _sectionManager(manager) {}
 
   void runCurrentIdlePattern();
   void cycleIdlePattern();
@@ -29,9 +28,10 @@ public:
   void fillSectionBySection();
   void fadeInBars();
   void rainbowMiddleOut();
+  void rainbowMiddleIn();
 
 private:
-  LightManager *_lightManager;
+  SectionManager *_sectionManager;
 
   uint32_t _barcodeScanColors[10] = {0xf8f9fa, 0xe9ecef, 0xdee2e6, 0xced4da, 0xadb5bd, 0x6c757d, 0x495057, 0x343a40, 0x212529, 0x000000};
   uint8_t _barGraphFadeInBrightnessLevels[10] = {5, 10, 15, 25, 30, 64, 92, 128, 200, 255};
@@ -52,4 +52,6 @@ private:
   uint8_t _rainbowMiddleOutColorLevelInSection = 0;
   unsigned long _rainbowMiddleOutLastChecked = 0;
   unsigned long _rainbowMiddleOutInterval = 500;
+
+  void _lightRandomSections(int numberOfSections);
 };
