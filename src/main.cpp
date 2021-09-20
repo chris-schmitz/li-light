@@ -54,7 +54,12 @@ void setupSectionManager()
 
 void setup()
 {
-  Serial.begin(9600);
+  // Serial.begin(9600);
+  // while (!Serial)
+  // {
+  //   ;
+  // }
+  // delay(2000);
 
   setupSectionManager();
   ultrasonicManager.begin();
@@ -81,8 +86,10 @@ void renderFrame()
   {
   case ACTIVATION_PATTERN:
     Serial.println("activation pattern");
+    patternRunner.scanAndFadeIn();
     break;
   case SWITCH_IDLE:
+    Serial.println("Switching pattern");
     patternRunner.cycleIdlePattern();
     break;
   default:

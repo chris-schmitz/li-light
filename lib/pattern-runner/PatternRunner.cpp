@@ -26,8 +26,10 @@ void PatternRunner::cycleIdlePattern()
   {
     _idlePatternCycleLastChecked = now;
     int newIndex = (_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS;
+    Serial.print("cylce to index: ");
+    Serial.println(newIndex);
 
-    _currentIdlePattern = static_cast<IdlePatterns>((_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS);
+    _currentIdlePattern = static_cast<IdlePatterns>(newIndex);
     FastLED.clear(true);
   }
 }
@@ -68,7 +70,6 @@ void PatternRunner::gradualBarcodeScan()
         color = CRGB(_barcodeScanColors[frameState[sectionIndex + frame]]);
       }
       _sectionManager->fillSectionWithColor(sectionIndex, color, FillStyle(ALL_AT_ONCE));
-      // _lightManager->setSectionColor(sectionIndex, color);
       FastLED.show();
     }
     delay(20);
@@ -84,12 +85,10 @@ void PatternRunner::nonBlockingSectionBySection()
     if (_idlePatternSectionBySectionFill)
     {
       _sectionManager->fillSectionWithColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Aquamarine, FillStyle(ALL_AT_ONCE));
-      // _lightManager->setSectionColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Aquamarine);
     }
     else
     {
       _sectionManager->fillSectionWithColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Black, FillStyle(ALL_AT_ONCE));
-      // _lightManager->setSectionColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Black);
     }
     FastLED.show();
 
@@ -103,20 +102,28 @@ void PatternRunner::nonBlockingSectionBySection()
 
 void PatternRunner::fillSectionBySection()
 {
-  for (uint8_t i = 0; i < 9; i++)
-  {
-    _sectionManager->fillSectionWithColor(i, CRGB::BlueViolet, FillStyle(ALL_AT_ONCE));
-    // _lightManager->setSectionColor(i, CRGB::BlueViolet);
-    FastLED.show();
-    delay(100);
-  }
-  for (uint8_t i = 0; i < 9; i++)
-  {
-    _sectionManager->fillSectionWithColor(i, CRGB::Black, FillStyle(ALL_AT_ONCE));
-    // _lightManager->setSectionColor(i, CRGB::Black);
-    FastLED.show();
-    delay(100);
-  }
+  _sectionManager->fillSectionWithColor(0, 0x00FFFF, FillStyle(ONE_AT_A_TIME, 100));
+  _sectionManager->fillSectionWithColor(1, 0x00FFFF, FillStyle(ONE_AT_A_TIME, 100));
+  _sectionManager->fillSectionWithColor(2, 0x00FFFF, FillStyle(ONE_AT_A_TIME, 100));
+  _sectionManager->fillSectionWithColor(3, 0x00FFFF, FillStyle(ONE_AT_A_TIME, 100));
+  _sectionManager->fillSectionWithColor(4, 0x00FFFF, FillStyle(ONE_AT_A_TIME, 100));
+  _sectionManager->fillSectionWithColor(5, 0x00FFFF, FillStyle(ONE_AT_A_TIME, 100));
+
+  _sectionManager->fillSectionWithColor(6, 0xFFFF00, FillStyle(ONE_AT_A_TIME, 150));
+  _sectionManager->fillSectionWithColor(7, 0xFFFF00, FillStyle(ONE_AT_A_TIME, 150));
+  _sectionManager->fillSectionWithColor(8, 0xFF00FF, FillStyle(ONE_AT_A_TIME, 150));
+  // for (uint8_t i = 0; i < 9; i++)
+  // {
+  //   _sectionManager->fillSectionWithColor(i, CRGB::BlueViolet, FillStyle(ALL_AT_ONCE));
+  //   FastLED.show();
+  //   delay(100);
+  // }
+  // for (uint8_t i = 0; i < 9; i++)
+  // {
+  //   _sectionManager->fillSectionWithColor(i, CRGB::Black, FillStyle(ALL_AT_ONCE));
+  //   FastLED.show();
+  //   delay(100);
+  // }
 }
 
 void PatternRunner::fadeInBars()
@@ -144,17 +151,25 @@ void PatternRunner::fadeInBars()
 
 void PatternRunner::rainbowMiddleIn()
 {
+  Serial.println("Running rainbow middle in");
   uint16_t level, wheelPosition;
+
+  Serial.print("Total levels: ");
+  Serial.println(_sectionManager->getTotalLevels());
 
   for (wheelPosition = 0; wheelPosition < 256; wheelPosition++)
   {
     for (level = 0; level < 4; level++)
     {
 
-      uint32_t color = Wheel((level * 20 + wheelPosition) & 255);
+      uint32_t color = Wheel((level * 30 + wheelPosition) & 255);
+
+      // char b[100];
+      // sprintf(b, "level: %d, color: %d, wheelpos: %d", level, color, wheelPosition);
+      // Serial.println(b);
+
       for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
       {
-        // _sectionManager->getSection(i).setColorAtLevel(level, color, true);
         _sectionManager->setColorAtLocalIndex(i, level, color);
         FastLED.show();
       }
@@ -192,7 +207,6 @@ void PatternRunner::rainbowMiddleOut()
     {
       _sectionManager->setColorAtLocalIndex(section, _rainbowMiddleOutColorLevelInSection, color);
       FastLED.show();
-      // _lightManager->setSectionLevelColor(section, _rainbowMiddleOutColorLevelInSection, color);
     }
     _rainbowMiddleOutColorWheelIndex++;
     _rainbowMiddleOutColorLevelInSection++;
@@ -202,8 +216,6 @@ void PatternRunner::rainbowMiddleOut()
 void PatternRunner::_lightRandomSections(int numberOfSections)
 {
   _sectionManager->clearAllSections();
-
-  // fill_solid(_leds, _totalLeds, CRGB::Black);
 
   int randomIndex1 = random(0, _sectionManager->getSectionCount());
   int randomIndex2 = random(0, _sectionManager->getSectionCount());
