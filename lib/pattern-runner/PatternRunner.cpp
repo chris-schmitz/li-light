@@ -14,7 +14,6 @@ void PatternRunner::runCurrentIdlePattern()
   case RAINBOW_MIDDLE_OUT:
     Serial.println("---> rainbow middle in!");
     rainbowMiddleIn();
-    // rainbowMiddleOut();
     break;
   }
 }

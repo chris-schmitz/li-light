@@ -18,7 +18,8 @@
     "bitset": "cpp",
     "cstdlib": "cpp",
     "associative_base": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "vector": "cpp"
   },
   "yaml.customTags": [
     "!And",

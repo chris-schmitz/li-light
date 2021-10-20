@@ -36,7 +36,7 @@ private:
   uint32_t _barcodeScanColors[10] = {0xf8f9fa, 0xe9ecef, 0xdee2e6, 0xced4da, 0xadb5bd, 0x6c757d, 0x495057, 0x343a40, 0x212529, 0x000000};
   uint8_t _barGraphFadeInBrightnessLevels[10] = {5, 10, 15, 25, 30, 64, 92, 128, 200, 255};
 
-  IdlePatterns _currentIdlePattern;
+  IdlePatterns _currentIdlePattern = RAINBOW_MIDDLE_OUT;
 
   // TODO: cleanup/refactor
   // ^ this feels super sloppy, clean it up

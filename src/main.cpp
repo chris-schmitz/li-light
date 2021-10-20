@@ -1,15 +1,15 @@
 #include "PatternRunner.h"
+#include "SectionManager.h"
 #include "TriggerTracker.h"
 #include "UltrasonicManager.h"
+#include <Adafruit_DotStar.h>
 #include <Arduino.h>
-#include <SectionManager.h>
-
 #include <FastLED.h>
 
 #define ECHO_PIN 1
 #define TRIGGER_PIN 2
 
-#define LED_STRIP 3
+#define LED_STRIP 0
 #define LED_COUNT 42
 
 #define LOG_TO_SERIAL_MONITOR true
@@ -18,6 +18,8 @@ uint8_t lightLevel;
 CRGB leds[LED_COUNT];
 uint8_t hue = 253;
 uint8_t saturation = 255;
+
+Adafruit_DotStar dot = Adafruit_DotStar(1, INTERNAL_DS_DATA, INTERNAL_DS_CLK, DOTSTAR_BGR);
 
 UltrasonicManager ultrasonicManager = UltrasonicManager(TRIGGER_PIN, ECHO_PIN);
 SectionManager sectionManager = SectionManager(leds);
@@ -61,9 +63,12 @@ void setup()
   // }
   // delay(2000);
 
+  dot.begin();
+  dot.clear();
+  dot.show();
+
   setupSectionManager();
   ultrasonicManager.begin();
-
   setupLedStrip();
 }
 
@@ -100,6 +105,9 @@ void renderFrame()
 
 void loop()
 {
+  Serial.println("loop");
+  patternRunner.runCurrentIdlePattern();
+  return;
   unsigned long now = millis();
 
   if (now - lastFrame > frameInterval)
