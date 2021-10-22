@@ -1,17 +1,14 @@
 #include "PatternRunner.h"
 #include "SectionManager.h"
-#include "TriggerTracker.h"
-#include "UltrasonicManager.h"
+#include "TouchTrigger.h"
 #include <Adafruit_DotStar.h>
 #include <Arduino.h>
 #include <FastLED.h>
 
-#define ECHO_PIN 1
-#define TRIGGER_PIN 2
-
 #define LED_STRIP 0
 #define LED_COUNT 42
-
+#define TOUCH_PIN A0
+#define TOUCH_THRESHOLD 800
 #define LOG_TO_SERIAL_MONITOR true
 
 uint8_t lightLevel;
@@ -20,13 +17,9 @@ uint8_t hue = 253;
 uint8_t saturation = 255;
 
 Adafruit_DotStar dot = Adafruit_DotStar(1, INTERNAL_DS_DATA, INTERNAL_DS_CLK, DOTSTAR_BGR);
-
-UltrasonicManager ultrasonicManager = UltrasonicManager(TRIGGER_PIN, ECHO_PIN);
 SectionManager sectionManager = SectionManager(leds);
 PatternRunner patternRunner = PatternRunner(&sectionManager);
-TriggerTracker triggerTracker = TriggerTracker(
-    PatternTriggerLimits(IDLE_PATTERN, 10, 2),
-    PatternTriggerLimits(ACTIVATION_PATTERN, 40, 5));
+TouchTrigger touchTrigger = TouchTrigger(TOUCH_PIN);
 
 void setupLedStrip()
 {
@@ -56,11 +49,12 @@ void setupSectionManager()
 
 void setup()
 {
-  // Serial.begin(9600);
-  // while (!Serial)
-  // {
-  //   ;
-  // }
+  Serial.begin(9600);
+  while (!Serial)
+  {
+    ;
+  }
+  Serial.println("setup");
   // delay(2000);
 
   dot.begin();
@@ -68,8 +62,9 @@ void setup()
   dot.show();
 
   setupSectionManager();
-  ultrasonicManager.begin();
   setupLedStrip();
+  touchTrigger.setTouchThreshold(TOUCH_THRESHOLD);
+  touchTrigger.begin();
 }
 
 unsigned long frameInterval = 10;
@@ -78,37 +73,22 @@ int lastLoggedDistance = 0;
 
 void renderFrame()
 {
-  lastLoggedDistance = ultrasonicManager.getAveragedDistance();
 
-  if (LOG_TO_SERIAL_MONITOR)
+  if (touchTrigger.touched())
   {
-    ultrasonicManager.logDistance(lastLoggedDistance); // ! test method
-  }
-
-  TriggerEnum currentTrigger = triggerTracker.getTriggerByDistance(lastLoggedDistance);
-
-  switch (currentTrigger)
-  {
-  case ACTIVATION_PATTERN:
-    Serial.println("activation pattern");
-    patternRunner.scanAndFadeIn();
-    break;
-  case SWITCH_IDLE:
     Serial.println("Switching pattern");
     patternRunner.cycleIdlePattern();
-    break;
-  default:
+  }
+  else
+  {
     patternRunner.runCurrentIdlePattern();
-    break;
   }
 }
 
 void loop()
 {
-  Serial.println("loop");
-  patternRunner.runCurrentIdlePattern();
-  return;
   unsigned long now = millis();
+  touchTrigger.tick(now);
 
   if (now - lastFrame > frameInterval)
   {
