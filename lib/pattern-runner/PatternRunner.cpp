@@ -6,13 +6,15 @@ void PatternRunner::runCurrentIdlePattern()
   switch (_currentIdlePattern)
   {
   case RANDOM_SECTIONS:
+    // Serial.println("---> RANDOM SECTIONS");
     randomSections();
     break;
   case SUNSET:
+    // Serial.println("---> NON BLOCKING SECTION BY SECTION");
     nonBlockingSectionBySection();
     break;
   case RAINBOW_MIDDLE_OUT:
-    // Serial.println("---> rainbow middle in!");
+    // Serial.println("---> RAINBOW MIDDLE IN");
     rainbowMiddleIn();
     break;
   }
@@ -20,17 +22,21 @@ void PatternRunner::runCurrentIdlePattern()
 
 void PatternRunner::cycleIdlePattern()
 {
-  unsigned long now = millis();
-  if (now - _idlePatternCycleLastChecked > _idlePatternCycleDebounceDuration)
-  {
-    _idlePatternCycleLastChecked = now;
-    int newIndex = (_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS;
-    Serial.print("cylce to index: ");
-    Serial.println(newIndex);
+  // TODO: consider reimplementing
+  // * we may need to put this back in but shortening the duration
+  // * if troubleshooting the double touch with the tough trigger doesn't
+  // * work.
+  // unsigned long now = millis();
+  // if (now - _idlePatternCycleLastChecked > _idlePatternCycleDebounceDuration)
+  // {
+  //   _idlePatternCycleLastChecked = now;
+  int newIndex = (_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS;
+  Serial.print("cylce to index: ");
+  Serial.println(newIndex);
 
-    _currentIdlePattern = static_cast<IdlePatterns>(newIndex);
-    FastLED.clear(true);
-  }
+  _currentIdlePattern = static_cast<IdlePatterns>(newIndex);
+  FastLED.clear(true);
+  // }
 }
 
 void PatternRunner::scanAndFadeIn()
@@ -83,7 +89,7 @@ void PatternRunner::nonBlockingSectionBySection()
     lastIdleSeciontBySectionCheck = now;
     if (_idlePatternSectionBySectionFill)
     {
-      _sectionManager->fillSectionWithColor(_idlePatternSectionBySectionCurrentIndex, CRGB::Aquamarine, FillStyle(ALL_AT_ONCE));
+      _sectionManager->fillSectionWithColor(_idlePatternSectionBySectionCurrentIndex, CRGB::DarkMagenta, FillStyle(ALL_AT_ONCE));
     }
     else
     {
@@ -111,18 +117,6 @@ void PatternRunner::fillSectionBySection()
   _sectionManager->fillSectionWithColor(6, 0xFFFF00, FillStyle(ONE_AT_A_TIME, 150));
   _sectionManager->fillSectionWithColor(7, 0xFFFF00, FillStyle(ONE_AT_A_TIME, 150));
   _sectionManager->fillSectionWithColor(8, 0xFF00FF, FillStyle(ONE_AT_A_TIME, 150));
-  // for (uint8_t i = 0; i < 9; i++)
-  // {
-  //   _sectionManager->fillSectionWithColor(i, CRGB::BlueViolet, FillStyle(ALL_AT_ONCE));
-  //   FastLED.show();
-  //   delay(100);
-  // }
-  // for (uint8_t i = 0; i < 9; i++)
-  // {
-  //   _sectionManager->fillSectionWithColor(i, CRGB::Black, FillStyle(ALL_AT_ONCE));
-  //   FastLED.show();
-  //   delay(100);
-  // }
 }
 
 void PatternRunner::fadeInBars()
@@ -148,35 +142,6 @@ void PatternRunner::fadeInBars()
   }
 }
 
-// void PatternRunner::rainbowMiddleIn()
-// {
-//   Serial.println("Running rainbow middle in");
-//   uint16_t level, wheelPosition;
-
-//   Serial.print("Total levels: ");
-//   Serial.println(_sectionManager->getTotalLevels());
-
-//   for (wheelPosition = 0; wheelPosition < 256; wheelPosition++)
-//   {
-//     for (level = 0; level < 4; level++)
-//     {
-
-//       uint32_t color = Wheel((level * 30 + wheelPosition) & 255);
-
-//       // char b[100];
-//       // sprintf(b, "level: %d, color: %d, wheelpos: %d", level, color, wheelPosition);
-//       // Serial.println(b);
-
-//       for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
-//       {
-//         _sectionManager->setColorAtLocalIndex(i, level, color);
-//         FastLED.show();
-//       }
-
-//       delay(10);
-//     }
-//   }
-// }
 void PatternRunner::rainbowMiddleIn()
 {
 
@@ -195,40 +160,6 @@ void PatternRunner::rainbowMiddleIn()
   }
 
   delay(10);
-}
-
-void PatternRunner::rainbowMiddleOut()
-{
-  // ! needs adjustments
-  // ^ We run into a multi part issue:
-  // * - the code and graph bars have different pixel counts, so they will have different numbers of "levels"
-  // * - if we handle the incrementation of section levels by blind math (e.g. start + x), then when we get
-  // *    to a level where some of the sections don't actually have enough pixels to reach that level, we'll
-  // *    start overwriting pixels in the ajoining sections
-  // * - on top of that previous isssue, if that happens on the sections at either end of the overall led strip
-  // *    then we'll extend the indexes outside of the overall strip's range likely what's causing the MC crash
-  // *    we're seeing now.
-  // ^ So, all of that said, it feels like we need to add awareness of "level" into the pixel range struct itself,
-  // ^ and possibly change the struct to a class that we add business logic into vs keeping it as a structured
-  // ^ accessor object
-  unsigned long now = millis(); // TODO: refactor to grab one millis per idle pattern call
-  if (now - _rainbowMiddleOutLastChecked > _rainbowMiddleOutInterval)
-  {
-    _rainbowMiddleOutLastChecked = now;
-    CRGB color = Wheel(_rainbowMiddleOutColorWheelIndex);
-
-    // char buffer[50];
-    // sprintf(buffer, "Level: %i, Color: %i", _rainbowMiddleOutColorLevelInSection, color);
-    // Serial.println(buffer);
-    // Serial.println("--------");
-    for (uint8_t section = 0; section < 9; section++) // TODO bring in total sections
-    {
-      _sectionManager->setColorAtLocalIndex(section, _rainbowMiddleOutColorLevelInSection, color);
-      FastLED.show();
-    }
-    _rainbowMiddleOutColorWheelIndex++;
-    _rainbowMiddleOutColorLevelInSection++;
-  }
 }
 
 void PatternRunner::_lightRandomSections(int numberOfSections)

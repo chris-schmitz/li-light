@@ -11,6 +11,7 @@ void TouchTrigger::begin()
   _touchSensor.begin();
 }
 
+// TODO: consider combining tick and touched
 void TouchTrigger::tick(unsigned long now)
 {
   if (_debounce == false)
@@ -20,9 +21,9 @@ void TouchTrigger::tick(unsigned long now)
 
   if (_logTouchInformation)
   {
-    char b[100];
-    sprintf(b, "now: %d, last: %d, running difference: %d, duration: %d", now, _lastDebounceTick, (now - _lastDebounceTick), _debounceDuration);
-    Serial.println(b);
+    // char b[100];
+    // sprintf(b, "now: %d, last: %d, running difference: %d, duration: %d", now, _lastDebounceTick, (now - _lastDebounceTick), _debounceDuration);
+    // Serial.println(b);
   }
 
   if (now - _lastDebounceTick > _debounceDuration)
@@ -38,8 +39,8 @@ bool TouchTrigger::touched()
 {
   if (_logTouchInformation)
   {
-    Serial.print("DEBOUNCE: ");
-    Serial.println(_debounce);
+    // Serial.print("DEBOUNCE: ");
+    // Serial.println(_debounce);
   }
 
   if (_debounce == true)
@@ -55,7 +56,7 @@ bool TouchTrigger::touched()
     Serial.println(result);
   }
 
-  if (result > _TOUCH_THRESHOLD)
+  if (result > _touchTreshold)
   {
     if (_logTouchInformation)
       Serial.println("--> Start debounce");
@@ -67,12 +68,12 @@ bool TouchTrigger::touched()
 
 void TouchTrigger::setTouchThreshold(int threshold)
 {
-  _TOUCH_THRESHOLD = threshold;
+  _touchTreshold = threshold;
 }
 
 int TouchTrigger::getTouchThreshold()
 {
-  return _TOUCH_THRESHOLD;
+  return _touchTreshold;
 }
 
 void TouchTrigger::setDebounceDuration(unsigned long duration)

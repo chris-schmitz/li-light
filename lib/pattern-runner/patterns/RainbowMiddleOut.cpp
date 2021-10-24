@@ -18,6 +18,10 @@ uint16_t RainbowMiddleOut::getLevel()
 
 void RainbowMiddleOut::_advanceLevel()
 {
+  // char b[100];
+  // sprintf(b, "level: %u, wheel pos: %u", _level, _wheelPosition);
+  // Serial.println(b);
+
   if (_level < _totalLightLevels)
   {
     _level++;

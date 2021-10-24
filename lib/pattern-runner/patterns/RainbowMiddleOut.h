@@ -13,7 +13,7 @@ private:
   uint16_t _level;
   uint16_t _wheelPosition;
 
-  int _totalWheelPositions = 256;
+  uint16_t _totalWheelPositions = 256;
   uint8_t _totalLightLevels = 4;
   uint8_t _colorWheelSpacing = 30;
 

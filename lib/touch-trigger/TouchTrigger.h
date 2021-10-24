@@ -20,7 +20,7 @@ public:
 
 private:
   Adafruit_FreeTouch _touchSensor;
-  int _TOUCH_THRESHOLD = 700;
+  int _touchTreshold = 700;
   bool _logTouchInformation = false;
 
   bool _debounce = false;

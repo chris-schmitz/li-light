@@ -8,7 +8,7 @@
 #define LED_STRIP 0
 #define LED_COUNT 42
 #define TOUCH_PIN A0
-#define TOUCH_THRESHOLD 800
+#define TOUCH_THRESHOLD 900
 #define LOG_TO_SERIAL_MONITOR true
 
 uint8_t lightLevel;
@@ -50,8 +50,8 @@ void setupSectionManager()
 void setupTouchTrigger()
 {
   touchTrigger.setTouchThreshold(TOUCH_THRESHOLD);
-  touchTrigger.setDebounceDuration(5000);
-  touchTrigger.logTouchInformation(true);
+  touchTrigger.setDebounceDuration(2000);
+  // touchTrigger.logTouchInformation(true);
   touchTrigger.begin();
 }
 
@@ -72,6 +72,12 @@ void setup()
   setupSectionManager();
   setupLedStrip();
   setupTouchTrigger();
+
+  // TODO: sample the cap level
+  // * when we switch power sources it slightly changes the capacitance level for the touch sensor.
+  // * they way they resolve this in circut python is to sample the cap level of the sensor on startup
+  // * and then set the threshold to +100 over the average so so that as the cap level changes our threshold
+  // * adjusts. we need to do that here too
 }
 
 unsigned long frameInterval = 10;
@@ -84,10 +90,11 @@ void renderFrame()
   if (touchTrigger.touched())
   {
     Serial.println("Switching pattern");
-    // patternRunner.cycleIdlePattern();
+    patternRunner.cycleIdlePattern();
   }
   else
   {
+    // Serial.println("run current pattern");
     patternRunner.runCurrentIdlePattern();
   }
 }
