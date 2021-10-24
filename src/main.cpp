@@ -47,13 +47,21 @@ void setupSectionManager()
   sectionManager.addRangeToSection(8, 39, 41, true);
 }
 
+void setupTouchTrigger()
+{
+  touchTrigger.setTouchThreshold(TOUCH_THRESHOLD);
+  touchTrigger.setDebounceDuration(5000);
+  touchTrigger.logTouchInformation(true);
+  touchTrigger.begin();
+}
+
 void setup()
 {
   Serial.begin(9600);
-  while (!Serial)
-  {
-    ;
-  }
+  // while (!Serial)
+  // {
+  //   ;
+  // }
   Serial.println("setup");
   // delay(2000);
 
@@ -63,8 +71,7 @@ void setup()
 
   setupSectionManager();
   setupLedStrip();
-  touchTrigger.setTouchThreshold(TOUCH_THRESHOLD);
-  touchTrigger.begin();
+  setupTouchTrigger();
 }
 
 unsigned long frameInterval = 10;
@@ -77,7 +84,7 @@ void renderFrame()
   if (touchTrigger.touched())
   {
     Serial.println("Switching pattern");
-    patternRunner.cycleIdlePattern();
+    // patternRunner.cycleIdlePattern();
   }
   else
   {

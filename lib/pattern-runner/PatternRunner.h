@@ -1,7 +1,7 @@
 #pragma once
 
-// #include "../light-manager/LightManager.h"
 #include "FastLED.h"
+#include "patterns/RainbowMiddleOut.h"
 #include <SectionManager.h>
 
 enum IdlePatterns
@@ -15,7 +15,10 @@ const uint8_t TOTAL_NUMBER_OF_IDLE_PATTERNS = 3;
 class PatternRunner
 {
 public:
-  PatternRunner(SectionManager *manager) : _sectionManager(manager) {}
+  PatternRunner(SectionManager *manager) : _sectionManager(manager)
+  {
+    _rainbowMiddleOut = RainbowMiddleOut();
+  }
 
   void runCurrentIdlePattern();
   void cycleIdlePattern();
@@ -46,12 +49,15 @@ private:
   uint8_t _idlePatternSectionBySectionCurrentIndex = 0;
   bool _idlePatternSectionBySectionFill = true;
   unsigned long lastIdleSeciontBySectionCheck;
-  int lastIdleSeciontBySectionDuration = 100;
+  unsigned int lastIdleSeciontBySectionDuration = 100;
 
   uint8_t _rainbowMiddleOutColorWheelIndex = 0;
   uint8_t _rainbowMiddleOutColorLevelInSection = 0;
   unsigned long _rainbowMiddleOutLastChecked = 0;
   unsigned long _rainbowMiddleOutInterval = 500;
+
+  // ^ Patterns
+  RainbowMiddleOut _rainbowMiddleOut;
 
   void _lightRandomSections(int numberOfSections);
 };

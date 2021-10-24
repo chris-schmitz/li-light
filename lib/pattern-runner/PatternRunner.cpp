@@ -1,5 +1,5 @@
 #include "PatternRunner.h"
-#include "../helpers.h"
+#include <helpers.h>
 
 void PatternRunner::runCurrentIdlePattern()
 {
@@ -12,7 +12,7 @@ void PatternRunner::runCurrentIdlePattern()
     nonBlockingSectionBySection();
     break;
   case RAINBOW_MIDDLE_OUT:
-    Serial.println("---> rainbow middle in!");
+    // Serial.println("---> rainbow middle in!");
     rainbowMiddleIn();
     break;
   }
@@ -148,34 +148,53 @@ void PatternRunner::fadeInBars()
   }
 }
 
+// void PatternRunner::rainbowMiddleIn()
+// {
+//   Serial.println("Running rainbow middle in");
+//   uint16_t level, wheelPosition;
+
+//   Serial.print("Total levels: ");
+//   Serial.println(_sectionManager->getTotalLevels());
+
+//   for (wheelPosition = 0; wheelPosition < 256; wheelPosition++)
+//   {
+//     for (level = 0; level < 4; level++)
+//     {
+
+//       uint32_t color = Wheel((level * 30 + wheelPosition) & 255);
+
+//       // char b[100];
+//       // sprintf(b, "level: %d, color: %d, wheelpos: %d", level, color, wheelPosition);
+//       // Serial.println(b);
+
+//       for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
+//       {
+//         _sectionManager->setColorAtLocalIndex(i, level, color);
+//         FastLED.show();
+//       }
+
+//       delay(10);
+//     }
+//   }
+// }
 void PatternRunner::rainbowMiddleIn()
 {
-  Serial.println("Running rainbow middle in");
-  uint16_t level, wheelPosition;
 
-  Serial.print("Total levels: ");
-  Serial.println(_sectionManager->getTotalLevels());
+  // ?! wtf
+  _rainbowMiddleOut.tick();
+  uint32_t color = _rainbowMiddleOut.getColor();
+  uint16_t level = _rainbowMiddleOut.getLevel();
+  // // char b[100];
+  // // sprintf(b, "level: %d, color: %d ", level, color);
+  // // Serial.println(b);
 
-  for (wheelPosition = 0; wheelPosition < 256; wheelPosition++)
+  for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
   {
-    for (level = 0; level < 4; level++)
-    {
-
-      uint32_t color = Wheel((level * 30 + wheelPosition) & 255);
-
-      // char b[100];
-      // sprintf(b, "level: %d, color: %d, wheelpos: %d", level, color, wheelPosition);
-      // Serial.println(b);
-
-      for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
-      {
-        _sectionManager->setColorAtLocalIndex(i, level, color);
-        FastLED.show();
-      }
-
-      delay(10);
-    }
+    _sectionManager->setColorAtLocalIndex(i, level, color);
+    FastLED.show();
   }
+
+  delay(10);
 }
 
 void PatternRunner::rainbowMiddleOut()
@@ -198,10 +217,10 @@ void PatternRunner::rainbowMiddleOut()
     _rainbowMiddleOutLastChecked = now;
     CRGB color = Wheel(_rainbowMiddleOutColorWheelIndex);
 
-    char buffer[50];
-    sprintf(buffer, "Level: %i, Color: %i", _rainbowMiddleOutColorLevelInSection, color);
-    Serial.println(buffer);
-    Serial.println("--------");
+    // char buffer[50];
+    // sprintf(buffer, "Level: %i, Color: %i", _rainbowMiddleOutColorLevelInSection, color);
+    // Serial.println(buffer);
+    // Serial.println("--------");
     for (uint8_t section = 0; section < 9; section++) // TODO bring in total sections
     {
       _sectionManager->setColorAtLocalIndex(section, _rainbowMiddleOutColorLevelInSection, color);
@@ -222,9 +241,9 @@ void PatternRunner::_lightRandomSections(int numberOfSections)
   CRGB randomColor1 = CRGB(random(20, 255), random(20, 255), random(20, 255));
   CRGB randomColor2 = CRGB(random(20, 255), random(20, 255), random(20, 255));
 
-  char buffer[100];
-  sprintf(buffer, "Random color 1: %d, Random color 2: %d", randomColor1, randomColor2);
-  Serial.println(buffer);
+  // char buffer[100];
+  // sprintf(buffer, "Random color 1: %d, Random color 2: %d", randomColor1, randomColor2);
+  // Serial.println(buffer);
 
   _sectionManager->fillSectionWithColor(randomIndex1, randomColor1, FillStyle(ALL_AT_ONCE));
   _sectionManager->fillSectionWithColor(randomIndex2, randomColor2, FillStyle(ALL_AT_ONCE));

@@ -4,62 +4,24 @@
 class TouchTrigger
 {
 public:
-  TouchTrigger(int touchPin)
-  {
-    _touchSensor = Adafruit_FreeTouch(touchPin, OVERSAMPLE_4, RESISTOR_50K, FREQ_MODE_NONE);
-  }
+  TouchTrigger(int touchPin);
 
-  void begin()
-  {
-    _touchSensor.begin();
-  }
+  void begin();
+  void tick(unsigned long now);
+  bool touched();
 
-  void tick(unsigned long now)
-  {
-    if (!_debounce)
-    {
-      return;
-    }
+  void setTouchThreshold(int threshold);
+  int getTouchThreshold();
 
-    if (now - _lastDebounceTick > _debounceDuration)
-    {
-      _debounce = false;
-    }
-  }
+  void setDebounceDuration(unsigned long duration);
+  unsigned long getDebounceDuration();
 
-  bool touched()
-  {
-    if (_debounce)
-    {
-      return false;
-    }
-
-    int result = _touchSensor.measure();
-
-    Serial.print("touch result: ");
-    Serial.println(result);
-
-    if (result > _TOUCH_THRESHOLD)
-    {
-      _debounce = true;
-      return true;
-    }
-    return false;
-  }
-
-  void setTouchThreshold(int threshold)
-  {
-    _TOUCH_THRESHOLD = threshold;
-  }
-
-  int getTouchThreshold()
-  {
-    return _TOUCH_THRESHOLD;
-  }
+  void logTouchInformation(bool state);
 
 private:
   Adafruit_FreeTouch _touchSensor;
   int _TOUCH_THRESHOLD = 700;
+  bool _logTouchInformation = false;
 
   bool _debounce = false;
   unsigned long _debounceDuration = 1000;
