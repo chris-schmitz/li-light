@@ -90,3 +90,30 @@ void TouchTrigger::logTouchInformation(bool state)
 {
   _logTouchInformation = state;
 }
+
+void TouchTrigger::setSampleSize(int size)
+{
+  _sampleSize = size;
+}
+
+void TouchTrigger::setTresholdOffset(int offset)
+{
+  _thresholdOffset = offset;
+}
+
+void TouchTrigger::_calculateAverageCapacitance()
+{
+  int samples = 0;
+
+  for (int i = 0; i < _sampleSize; i++)
+  {
+    samples += _touchSensor.measure();
+  }
+
+  int average = samples / _sampleSize;
+  _touchTreshold = average + _thresholdOffset;
+
+  char b[100];
+  sprintf(b, "average: %i, threshold: %i", average, _touchTreshold);
+  Serial.println(b);
+}
