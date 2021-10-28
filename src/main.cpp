@@ -59,12 +59,12 @@ void setupTouchTrigger()
 
 void setup()
 {
-  Serial.begin(9600);
-  while (!Serial)
-  {
-    ;
-  }
-  Serial.println("setup");
+  // Serial.begin(9600);
+  // while (!Serial)
+  // {
+  //   ;
+  // }
+  // Serial.println("setup");
   delay(2000);
 
   dot.begin();

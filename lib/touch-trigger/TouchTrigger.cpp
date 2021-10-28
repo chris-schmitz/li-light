@@ -9,6 +9,7 @@ TouchTrigger::TouchTrigger(int touchPin)
 void TouchTrigger::begin()
 {
   _touchSensor.begin();
+  _calculateAverageCapacitance();
 }
 
 // TODO: consider combining tick and touched
