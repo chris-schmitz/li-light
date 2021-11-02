@@ -1,9 +1,39 @@
 #include "RainbowMiddleOut.h"
 #include <helpers.h>
 
+RainbowMiddleOut::RainbowMiddleOut()
+{
+  _init();
+}
+RainbowMiddleOut::RainbowMiddleOut(SectionManager *manager) : _sectionManager(manager)
+{
+  _init();
+}
+
+void RainbowMiddleOut::_init()
+{
+}
+
 void RainbowMiddleOut::tick()
 {
   _advanceLevel();
+}
+
+void RainbowMiddleOut::_tickRainbow()
+{
+  uint32_t color = getColor();
+  uint16_t level = getLevel();
+  // char b[100];
+  // sprintf(b, "level: %d, color: %d ", level, color);
+  // Serial.println(b);
+
+  for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
+  {
+    _sectionManager->setColorAtLocalIndex(i, level, color);
+    FastLED.show();
+  }
+
+  delay(10);
 }
 
 uint32_t RainbowMiddleOut::getColor()

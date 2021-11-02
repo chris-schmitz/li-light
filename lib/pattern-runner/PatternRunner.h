@@ -27,24 +27,9 @@ public:
   void runCurrentIdlePattern();
   void cycleIdlePattern();
 
-  // * Patterns
-  void scanAndFadeIn();
-  void randomSections();
-  void gradualBarcodeScan();
-  void fillSectionBySection();
-  void fadeInBars();
-  void rainbowMiddleOut();
-
 private:
   SectionManager *_sectionManager;
-
-
   IdlePatterns _currentIdlePattern = RAINBOW_MIDDLE_OUT;
-
-  // TODO: cleanup/refactor
-  // ^ this feels super sloppy, clean it up
-  unsigned long _idlePatternCycleDebounceDuration = 5000;
-  unsigned long _idlePatternCycleLastChecked = 0;
 
   // ^ Patterns
   RainbowMiddleOut _rainbowMiddleOut;
