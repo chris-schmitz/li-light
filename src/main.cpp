@@ -50,8 +50,8 @@ void setupSectionManager()
 void setupTouchTrigger()
 {
   touchTrigger.setTouchThreshold(TOUCH_THRESHOLD);
-  touchTrigger.setDebounceDuration(2000);
-  touchTrigger.setSampleSize(100);
+  touchTrigger.setDebounceDuration(500);
+  touchTrigger.setSampleSize(50);
   touchTrigger.setTresholdOffset(100);
   // touchTrigger.logTouchInformation(true);
   touchTrigger.begin();
@@ -59,13 +59,7 @@ void setupTouchTrigger()
 
 void setup()
 {
-  // Serial.begin(9600);
-  // while (!Serial)
-  // {
-  //   ;
-  // }
-  // Serial.println("setup");
-  delay(2000);
+  // delay(2000);
 
   dot.begin();
   dot.clear();
@@ -80,10 +74,11 @@ unsigned long frameInterval = 10;
 unsigned long lastFrame = 0;
 int lastLoggedDistance = 0;
 
-void renderFrame()
+void renderFrame(unsigned long now)
 {
+  bool touched = touchTrigger.touched(now);
 
-  if (touchTrigger.touched())
+  if (touched)
   {
     Serial.println("Switching pattern");
     patternRunner.cycleIdlePattern();
@@ -98,11 +93,10 @@ void renderFrame()
 void loop()
 {
   unsigned long now = millis();
-  touchTrigger.tick(now);
 
   if (now - lastFrame > frameInterval)
   {
     lastFrame = now;
-    renderFrame();
+    renderFrame(now);
   }
 }

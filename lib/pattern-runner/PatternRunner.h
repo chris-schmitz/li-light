@@ -2,6 +2,8 @@
 
 #include "FastLED.h"
 #include "patterns/RainbowMiddleOut.h"
+#include "patterns/RandomAndScan.h"
+#include "patterns/SectionBySection.h"
 #include <SectionManager.h>
 
 enum IdlePatterns
@@ -18,6 +20,8 @@ public:
   PatternRunner(SectionManager *manager) : _sectionManager(manager)
   {
     _rainbowMiddleOut = RainbowMiddleOut();
+    _randomAndScan = RandomAndScan(_sectionManager);
+    _sectionBySection = SectionBySection(_sectionManager);
   }
 
   void runCurrentIdlePattern();
@@ -27,17 +31,13 @@ public:
   void scanAndFadeIn();
   void randomSections();
   void gradualBarcodeScan();
-  void nonBlockingSectionBySection();
   void fillSectionBySection();
   void fadeInBars();
   void rainbowMiddleOut();
-  void rainbowMiddleIn();
 
 private:
   SectionManager *_sectionManager;
 
-  uint32_t _barcodeScanColors[10] = {0xf8f9fa, 0xe9ecef, 0xdee2e6, 0xced4da, 0xadb5bd, 0x6c757d, 0x495057, 0x343a40, 0x212529, 0x000000};
-  uint8_t _barGraphFadeInBrightnessLevels[10] = {5, 10, 15, 25, 30, 64, 92, 128, 200, 255};
 
   IdlePatterns _currentIdlePattern = RAINBOW_MIDDLE_OUT;
 
@@ -46,18 +46,10 @@ private:
   unsigned long _idlePatternCycleDebounceDuration = 5000;
   unsigned long _idlePatternCycleLastChecked = 0;
 
-  uint8_t _idlePatternSectionBySectionCurrentIndex = 0;
-  bool _idlePatternSectionBySectionFill = true;
-  unsigned long lastIdleSeciontBySectionCheck;
-  unsigned int lastIdleSeciontBySectionDuration = 100;
-
-  uint8_t _rainbowMiddleOutColorWheelIndex = 0;
-  uint8_t _rainbowMiddleOutColorLevelInSection = 0;
-  unsigned long _rainbowMiddleOutLastChecked = 0;
-  unsigned long _rainbowMiddleOutInterval = 500;
-
   // ^ Patterns
   RainbowMiddleOut _rainbowMiddleOut;
+  RandomAndScan _randomAndScan;
+  SectionBySection _sectionBySection;
 
   void _lightRandomSections(int numberOfSections);
 };
