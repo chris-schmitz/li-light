@@ -33,8 +33,32 @@ CRGB SectionBySection::_randomColor()
   return CRGB(random8(), random8(), random8());
 }
 
+// TODO: cleanup
+// * this feels a bit sloppy, either abstract or rethink the implementaiton
+bool SectionBySection::_shouldHold()
+{
+  if (_hold == false)
+  {
+    return false;
+  }
+
+  _holdCount++;
+  if (_holdCount > _totalHoldCount)
+  {
+    _hold = false;
+    _holdCount = 0;
+    return false;
+  }
+  return true;
+}
+
 void SectionBySection::_advanceSection()
 {
+  if (_shouldHold())
+  {
+    return;
+  }
+
   if (_fillSections)
   {
     _sectionManager->fillSectionWithColor(_currentSectionIndex, _fillColor, FillStyle(ALL_AT_ONCE));
@@ -50,5 +74,9 @@ void SectionBySection::_advanceSection()
   {
     _fillSections = !_fillSections;
     _fillColor = _randomColor();
+    if (_fillSections == false)
+    {
+      _hold = true;
+    }
   }
 }
