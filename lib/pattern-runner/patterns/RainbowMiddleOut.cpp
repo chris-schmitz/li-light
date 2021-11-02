@@ -17,15 +17,16 @@ void RainbowMiddleOut::_init()
 void RainbowMiddleOut::tick()
 {
   _advanceLevel();
+  _tickRainbow();
 }
 
 void RainbowMiddleOut::_tickRainbow()
 {
   uint32_t color = getColor();
   uint16_t level = getLevel();
-  // char b[100];
-  // sprintf(b, "level: %d, color: %d ", level, color);
-  // Serial.println(b);
+  char b[100];
+  sprintf(b, "level: %d, color: %d ", level, color);
+  Serial.println(b);
 
   for (uint8_t i = 0; i < _sectionManager->getSectionCount(); i++)
   {

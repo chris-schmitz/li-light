@@ -6,15 +6,12 @@ void PatternRunner::runCurrentIdlePattern()
   switch (_currentIdlePattern)
   {
   case RANDOM_SECTIONS:
-    // Serial.println("---> RANDOM SECTIONS");
     _randomAndScan.tick();
     break;
-  case SUNSET:
-    // Serial.println("---> NON BLOCKING SECTION BY SECTION");
+  case SECTION_BY_SECTION:
     _sectionBySection.tick();
     break;
   case RAINBOW_MIDDLE_OUT:
-    // Serial.println("---> RAINBOW MIDDLE IN");
     _rainbowMiddleOut.tick();
     break;
   }
@@ -27,5 +24,10 @@ void PatternRunner::cycleIdlePattern()
   Serial.println(newIndex);
 
   _currentIdlePattern = static_cast<IdlePatterns>(newIndex);
+  if (_currentIdlePattern == SECTION_BY_SECTION)
+  {
+    _sectionBySection.reset();
+  }
+
   FastLED.clear(true);
 }

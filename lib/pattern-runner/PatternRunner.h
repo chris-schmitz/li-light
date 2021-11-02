@@ -9,7 +9,7 @@
 enum IdlePatterns
 {
   RANDOM_SECTIONS,
-  SUNSET,
+  SECTION_BY_SECTION,
   RAINBOW_MIDDLE_OUT
 };
 const uint8_t TOTAL_NUMBER_OF_IDLE_PATTERNS = 3;
@@ -19,7 +19,7 @@ class PatternRunner
 public:
   PatternRunner(SectionManager *manager) : _sectionManager(manager)
   {
-    _rainbowMiddleOut = RainbowMiddleOut();
+    _rainbowMiddleOut = RainbowMiddleOut(_sectionManager);
     _randomAndScan = RandomAndScan(_sectionManager);
     _sectionBySection = SectionBySection(_sectionManager);
   }

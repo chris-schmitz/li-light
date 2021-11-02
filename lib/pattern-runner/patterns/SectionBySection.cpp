@@ -28,6 +28,12 @@ void SectionBySection::tick()
   }
 }
 
+void SectionBySection::reset()
+{
+  _hold = false;
+  _currentSectionIndex = 0;
+}
+
 CRGB SectionBySection::_randomColor()
 {
   return CRGB(random8(), random8(), random8());

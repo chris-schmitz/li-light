@@ -8,6 +8,7 @@ public:
   SectionBySection();
   SectionBySection(SectionManager *manager);
   void tick();
+  void reset();
 
 private:
   SectionManager *_sectionManager;
