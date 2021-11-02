@@ -16,6 +16,10 @@ CRGB leds[LED_COUNT];
 uint8_t hue = 253;
 uint8_t saturation = 255;
 
+unsigned long frameInterval = 10;
+unsigned long lastFrame = 0;
+int lastLoggedDistance = 0;
+
 Adafruit_DotStar dot = Adafruit_DotStar(1, INTERNAL_DS_DATA, INTERNAL_DS_CLK, DOTSTAR_BGR);
 SectionManager sectionManager = SectionManager(leds);
 PatternRunner patternRunner = PatternRunner(&sectionManager);
@@ -59,7 +63,6 @@ void setupTouchTrigger()
 
 void setup()
 {
-  // delay(2000);
 
   dot.begin();
   dot.clear();
@@ -69,10 +72,6 @@ void setup()
   setupLedStrip();
   setupTouchTrigger();
 }
-
-unsigned long frameInterval = 10;
-unsigned long lastFrame = 0;
-int lastLoggedDistance = 0;
 
 void renderFrame(unsigned long now)
 {
@@ -85,7 +84,6 @@ void renderFrame(unsigned long now)
   }
   else
   {
-    // Serial.println("run current pattern");
     patternRunner.runCurrentIdlePattern();
   }
 }

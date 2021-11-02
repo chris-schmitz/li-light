@@ -12,30 +12,6 @@ void TouchTrigger::begin()
   _calculateAverageCapacitance();
 }
 
-// TODO: ripout
-// void TouchTrigger::tick(unsigned long now)
-// {
-//   if (_debounce == false)
-//   {
-//     return;
-//   }
-
-//   if (_logTouchInformation)
-//   {
-//     // char b[100];
-//     // sprintf(b, "now: %d, last: %d, running difference: %d, duration: %d", now, _lastDebounceTick, (now - _lastDebounceTick), _debounceDuration);
-//     // Serial.println(b);
-//   }
-
-//   if (now - _lastDebounceTick > _debounceDuration)
-//   {
-//     _lastDebounceTick = now;
-//     if (_logTouchInformation)
-//       Serial.println("--> End debounce");
-//     _debounce = false;
-//   }
-// }
-
 bool TouchTrigger::touched(unsigned long now)
 {
 
@@ -48,11 +24,6 @@ bool TouchTrigger::touched(unsigned long now)
   if (_touchTriggered())
   {
     _debounce = true;
-    // TODO: come back and review:
-    // * wrap your head around needing to assign now here. I feel the gist of the why,
-    // * like the time between noticing the touch and starting the debounce is already large
-    // * enough that we've finished an instance of a debounce before debouncing, but I don't
-    // * think that's right. Figure it out.
     _lastDebounceTick = now;
     return true;
   }
@@ -127,8 +98,6 @@ void TouchTrigger::_tickDebounce(unsigned long now)
 {
   if (now - _lastDebounceTick > _debounceDuration)
   {
-    // Serial.println("Stop debounce");
-    // Serial.println("=========================");
     _lastDebounceTick = now;
     _debounce = false;
   }
