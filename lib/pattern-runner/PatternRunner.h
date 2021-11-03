@@ -24,8 +24,8 @@ public:
     _sectionBySection = SectionBySection(_sectionManager);
   }
 
-  void runCurrentIdlePattern();
-  void cycleIdlePattern();
+  void runActivePattern();
+  void cyclePattern();
 
 private:
   SectionManager *_sectionManager;

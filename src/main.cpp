@@ -11,14 +11,10 @@
 #define TOUCH_THRESHOLD 900
 #define LOG_TO_SERIAL_MONITOR true
 
-uint8_t lightLevel;
 CRGB leds[LED_COUNT];
-uint8_t hue = 253;
-uint8_t saturation = 255;
 
 unsigned long frameInterval = 10;
 unsigned long lastFrame = 0;
-int lastLoggedDistance = 0;
 
 Adafruit_DotStar dot = Adafruit_DotStar(1, INTERNAL_DS_DATA, INTERNAL_DS_CLK, DOTSTAR_BGR);
 SectionManager sectionManager = SectionManager(leds);
@@ -61,13 +57,16 @@ void setupTouchTrigger()
   touchTrigger.begin();
 }
 
-void setup()
+void disableDotstar()
 {
-
   dot.begin();
   dot.clear();
   dot.show();
+}
 
+void setup()
+{
+  disableDotstar();
   setupSectionManager();
   setupLedStrip();
   setupTouchTrigger();
@@ -80,11 +79,11 @@ void renderFrame(unsigned long now)
   if (touched)
   {
     Serial.println("Switching pattern");
-    patternRunner.cycleIdlePattern();
+    patternRunner.cyclePattern();
   }
   else
   {
-    patternRunner.runCurrentIdlePattern();
+    patternRunner.runActivePattern();
   }
 }
 

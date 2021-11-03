@@ -1,7 +1,7 @@
 #include "PatternRunner.h"
 #include <helpers.h>
 
-void PatternRunner::runCurrentIdlePattern()
+void PatternRunner::runActivePattern()
 {
   switch (_currentIdlePattern)
   {
@@ -17,7 +17,7 @@ void PatternRunner::runCurrentIdlePattern()
   }
 }
 
-void PatternRunner::cycleIdlePattern()
+void PatternRunner::cyclePattern()
 {
   int newIndex = (_currentIdlePattern + 1) % TOTAL_NUMBER_OF_IDLE_PATTERNS;
   Serial.print("cylce to index: ");
