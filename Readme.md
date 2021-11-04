@@ -1,6 +1,6 @@
 # LI Light
 
-![demo]()
+![demo](./readme_attachments/switch-on.gif)
 
 ## Overview
 
@@ -12,21 +12,21 @@ The piece is made of LED acrylic over a 3d printed shape that acts as a light ma
 
 The code runs 3 patterns, the code for each can be found in the `lib/pattern-runner/patterns/` directory.
 
-### Rainbow Middle Out
+### Rainbow
 
-![]()
+![rainbow middle out pattern](./readme_attachments/pattern-rainbow-middle-in.gif)
 
 ### Random + Scan
 
-![]()
+![random and scan pattern](./readme_attachments/pattern-random-and-scan.gif)
 
 ### Section by section fill
 
-![]()
+![section by section pattern](./readme_attachments/pattern-solid-fills.gif)
 
 A touch pad on the back panel uses a capacitive touch sensor built into the Trinket M0 to detect a touch on a copper pad.
 
-![]()
+![back panel example](.gif)
 
 The capacitive touch library being used is the [Adafruit_FreeTouch](https://github.com/adafruit/Adafruit_FreeTouch) library (it wasn't available via the arduino or platformio registeries so I had to copy it in, I didn't write that bit of code ;) ).
 
@@ -44,17 +44,15 @@ I wrote the SectionManager as a spin off project for this one and made it as a s
 
 I knew I wanted to have multiple patterns with a way of switcing between them, so I opted for a capactitive touch sensor to act as a pattern switch trigger.
 
-![]()
-
 Actually, if you dive back through the git history the original idea was to use an ultrasonic sensor with different ranges to trigger an idle pattern shuffle vs a primary animation trigger.
 
-![]()
+![ultrasonic triggers](.gif)
 
 Regarless of the trigger mechanism, all of the patterns need to be non-blocking.
 
 If you look in the `PatternRunner.cpp` you'll notice that the when `runActivePattern` is fired, it's calling a tick method on whichever pattern class is considered active:
 
-![](readme_attachments/pattern-tick.png)
+![pattern ticks](readme_attachments/pattern-tick.png)
 
 Basically the whole setup is a big state machine firing on a regular interval where the tick advances a given pattern by one step. So all of the patterns are non blocking with one exception being the scan animation part of the `RandomAndScan` class. That one is intentionally blocking because I though the whole animation was super cool and I didn't want someone to cut it off part way through it ;P
 
@@ -68,7 +66,7 @@ As part of the `RainbowMiddleOut` pattern I use a couple of helper functions to 
 
 This light and the couple of others that I'll be making use the first custom circuit board that I've had manufactured.
 
-![]()
+![custom circuit board]()
 
 I've designed custom boards before and milled them out on the Bantam OtherMill down at [MADE](), but this is the first that I've actually sent out to a PCB manufacturer to be professionally manfactured :D
 
