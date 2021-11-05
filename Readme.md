@@ -26,7 +26,7 @@ The code runs 3 patterns, the code for each can be found in the `lib/pattern-run
 
 A touch pad on the back panel uses a capacitive touch sensor built into the Trinket M0 to detect a touch on a copper pad.
 
-![back panel example](.gif)
+![back panel example](./readme_attachments/panel.jpg)
 
 The capacitive touch library being used is the [Adafruit_FreeTouch](https://github.com/adafruit/Adafruit_FreeTouch) library (it wasn't available via the arduino or platformio registeries so I had to copy it in, I didn't write that bit of code ;) ).
 
@@ -46,13 +46,13 @@ I knew I wanted to have multiple patterns with a way of switcing between them, s
 
 Actually, if you dive back through the git history the original idea was to use an ultrasonic sensor with different ranges to trigger an idle pattern shuffle vs a primary animation trigger.
 
-![ultrasonic triggers](.gif)
+![ultrasonic triggers](./readme_attachments/ultrasonic-trigger.gif)
 
 Regarless of the trigger mechanism, all of the patterns need to be non-blocking.
 
 If you look in the `PatternRunner.cpp` you'll notice that the when `runActivePattern` is fired, it's calling a tick method on whichever pattern class is considered active:
 
-![pattern ticks](readme_attachments/pattern-tick.png)
+![pattern ticks](./readme_attachments/pattern-tick.png)
 
 Basically the whole setup is a big state machine firing on a regular interval where the tick advances a given pattern by one step. So all of the patterns are non blocking with one exception being the scan animation part of the `RandomAndScan` class. That one is intentionally blocking because I though the whole animation was super cool and I didn't want someone to cut it off part way through it ;P
 
@@ -66,7 +66,7 @@ As part of the `RainbowMiddleOut` pattern I use a couple of helper functions to 
 
 This light and the couple of others that I'll be making use the first custom circuit board that I've had manufactured.
 
-![custom circuit board]()
+![custom circuit board](./readme_attachments/circuit-boards.jpg)
 
 I've designed custom boards before and milled them out on the Bantam OtherMill down at [MADE](), but this is the first that I've actually sent out to a PCB manufacturer to be professionally manfactured :D
 
@@ -75,15 +75,15 @@ I've designed custom boards before and milled them out on the Bantam OtherMill d
 All of the physical fabrication outside of the actual shadowbox itself are 3d printed parts that I modeled in Fusion 360 and printed out on my Prusa MK3s
 
 ![fusion]()
-![printer]()
+![printer](./readme_attachments/mounts.jpg)
 
 I made a light for my wife's company before this and used a laser cut piece of plywood to mount the logo mask int the middle of the shadowbox.
 
-![ripeta logo light]()
+![ripeta logo light](./readme_attachments/ripeta.gif)
 
 This worked pretty well, but I wanted something that I could produce at home and that required less material. Coming up with the custom centering mounts made the process much easier.
 
-![mounts]()
+![mounts](./readme_attachments/mounts-mounted.jpg)
 
 ## Thoughts
 
