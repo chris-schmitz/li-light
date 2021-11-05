@@ -79,6 +79,9 @@ All of the physical fabrication outside of the actual shadowbox itself are 3d pr
 
 I made a light for my wife's company before this and used a laser cut piece of plywood to mount the logo mask int the middle of the shadowbox.
 
+![wood mount 1](./readme_attachments/ripeta-wood-mount-1.jpg)
+![wood mount 2](./readme_attachments/ripeta-wood-mount-2.jpg)
+
 ![ripeta logo light](./readme_attachments/ripeta.gif)
 
 This worked pretty well, but I wanted something that I could produce at home and that required less material. Coming up with the custom centering mounts made the process much easier.
