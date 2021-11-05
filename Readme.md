@@ -74,7 +74,7 @@ I've designed custom boards before and milled them out on the Bantam OtherMill d
 
 All of the physical fabrication outside of the actual shadowbox itself are 3d printed parts that I modeled in Fusion 360 and printed out on my Prusa MK3s
 
-![fusion]()
+![fusion](./readme_attachments/overview.gif)
 ![printer](./readme_attachments/mounts.jpg)
 
 I made a light for my wife's company before this and used a laser cut piece of plywood to mount the logo mask int the middle of the shadowbox.
